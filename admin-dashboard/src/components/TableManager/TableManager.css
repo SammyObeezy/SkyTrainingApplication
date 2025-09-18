@@ -1,0 +1,173 @@
+/* Main Container */
+.table-container {
+  background-color: var(--surface-color);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.table-content-wrapper {
+  overflow-x: auto;
+}
+
+.main-table {
+  width: 100%;
+  border-collapse: collapse;
+  /* KEY CHANGE: Forces the table to obey the column widths we set,
+     rather than sizing based on content. */
+  table-layout: fixed;
+}
+
+/* Table Header */
+.main-table th {
+  padding: 16px;
+  background-color: #f8f9fa;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 12px;
+  color: var(--text-color-secondary);
+  border-bottom: 1px solid var(--border-color);
+  text-align: left;
+}
+
+/* Table Body */
+.main-table td {
+  padding: 16px;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-color-primary);
+  font-size: 14px;
+  /* KEY CHANGE: Prevents long text (like emails) from breaking the layout. */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.main-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.main-table tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+/* Actions Column Styling */
+.table-actions {
+  display: flex;
+  /* KEY CHANGE: Switched back to horizontal layout for actions */
+  flex-direction: row; 
+  justify-content: flex-start;
+  gap: var(--spacing-unit);
+}
+
+.action-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+}
+
+.action-btn:hover {
+  background-color: #e9ecef;
+}
+
+/* Footer & Pagination */
+.table-footer {
+  padding: 16px;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  justify-content: flex-end;
+}
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.pagination-btn {
+  padding: 8px 12px;
+  border: 1px solid var(--border-color);
+  background-color: var(--surface-color);
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  font-size: 14px;
+}
+.pagination-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+.page-indicator {
+  font-weight: 500;
+  font-size: 14px;
+  padding: 8px;
+}
+
+/* No Data Message */
+.no-data-message {
+  padding: 32px;
+  text-align: center;
+  color: var(--text-color-secondary);
+}
+.tickets-table { /* Changed from .main-table */
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed; 
+}
+
+/* Table Header */
+.tickets-table th { /* Changed from .main-table th */
+  padding: 16px;
+  background-color: #f8f9fa;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 12px;
+  color: var(--text-color-secondary);
+  border-bottom: 1px solid var(--border-color);
+  text-align: left;
+}
+
+/* Table Body */
+.tickets-table td { /* Changed from .main-table td */
+  padding: 16px;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-color-primary);
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tickets-table tbody tr:last-child td { /* Changed from .main-table ... */
+  border-bottom: none;
+}
+
+.tickets-table tbody tr:hover { /* Changed from .main-table ... */
+  background-color: #f8f9fa;
+}
+.ticket-actions { /* Corrected class name */
+  display: flex;
+  flex-direction: row; /* Ensure actions are side-by-side */
+  justify-content: flex-start;
+  gap: var(--spacing-unit);
+}
+
+
+/* Modal and other styles remain the same... */
+.modal-overlay { position: fixed; inset: 0; background-color: rgba(0, 0, 0, 0.6); display: flex; justify-content: center; align-items: center; z-index: 1000; }
+.modal-content { background-color: var(--surface-color); padding: 24px; border-radius: var(--border-radius); box-shadow: var(--shadow-md); width: 90%; max-width: 500px; }
+.modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; margin-bottom: 16px; }
+.modal-title { font-size: 1.25rem; font-weight: 600; margin: 0; }
+.modal-close { background: none; border: none; cursor: pointer; font-size: 1.5rem; line-height: 1; }
+.modal-footer { display: flex; justify-content: flex-end; gap: var(--spacing-unit); border-top: 1px solid var(--border-color); padding-top: 16px; margin-top: 16px; }
+.submit-btn { background-color: var(--primary-color); color: white; padding: 8px 16px; border: none; border-radius: var(--border-radius); cursor: pointer; }
+.secondary-btn { background-color: #e9ecef; color: var(--text-color-primary); padding: 8px 16px; border: 1px solid var(--border-color); border-radius: var(--border-radius); cursor: pointer; }
+.filter-row, .sort-row { display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: var(--spacing-unit); align-items: center; margin-bottom: var(--spacing-unit); }
+.sort-row { grid-template-columns: 1fr 1fr auto; }
+.filter-header, .sort-header { font-weight: 600; }
+.filter-row select, .filter-row input, .sort-row select { width: 100%; padding: var(--spacing-unit); border: 1px solid var(--border-color); border-radius: var(--border-radius); }
+.delete-filter-btn, .delete-sort-btn { background: none; border: none; cursor: pointer; color: var(--danger-color); }
+.add-filter-btn, .add-sort-btn { display: flex; align-items: center; gap: var(--spacing-unit); background: none; border: 1px dashed var(--border-color); padding: var(--spacing-unit); cursor: pointer; border-radius: var(--border-radius); margin-top: var(--spacing-unit); }

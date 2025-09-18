@@ -1,0 +1,21 @@
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: var(--spacing-unit);
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: calc(var(--spacing-unit) * 2);
+}
+
+.page-header-title {
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: var(--text-color-primary);
+  margin: 0;
+}
+
+.page-header-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-unit);
+}
