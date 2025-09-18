@@ -15,10 +15,11 @@ export const Route = createFileRoute('/_private/users')({
 });
 
 function UsersPage() {
+  // Add the default sorter back in
   const [tableState, setTableState] = useState<TableState>({
     page: 1,
     filters: [],
-    sorters: [],
+    sorters: [{ column: 'id', order: 'asc' }],
   });
 
   return (
@@ -32,8 +33,6 @@ function UsersPage() {
           <TableControlsWithContext />
         </PageHeader>
         
-        {/* These components from the context will automatically handle
-            the loading, error, and "No users found" states. */}
         <ErrorMessage />
         <LoadingOverlay />
         <TableWithContext />

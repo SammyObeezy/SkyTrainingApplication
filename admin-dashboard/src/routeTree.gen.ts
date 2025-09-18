@@ -16,6 +16,7 @@ import { Route as PublicLoginRouteImport } from './routes/_public/login'
 import { Route as PrivateUsersRouteImport } from './routes/_private/users'
 import { Route as PrivateTasksIndexRouteImport } from './routes/_private/tasks/index'
 import { Route as PrivateSubjectsIndexRouteImport } from './routes/_private/subjects/index'
+import { Route as PrivateTasksTaskIdRouteImport } from './routes/_private/tasks/$taskId'
 import { Route as PrivateSubjectsNewRouteImport } from './routes/_private/subjects/new'
 import { Route as PrivateSubjectsSubjectIdRouteImport } from './routes/_private/subjects/$subjectId'
 import { Route as PrivateSubjectsSubjectIdEditRouteImport } from './routes/_private/subjects/$subjectId.edit'
@@ -53,6 +54,11 @@ const PrivateSubjectsIndexRoute = PrivateSubjectsIndexRouteImport.update({
   path: '/subjects/',
   getParentRoute: () => PrivateRoute,
 } as any)
+const PrivateTasksTaskIdRoute = PrivateTasksTaskIdRouteImport.update({
+  id: '/tasks/$taskId',
+  path: '/tasks/$taskId',
+  getParentRoute: () => PrivateRoute,
+} as any)
 const PrivateSubjectsNewRoute = PrivateSubjectsNewRouteImport.update({
   id: '/subjects/new',
   path: '/subjects/new',
@@ -77,6 +83,7 @@ export interface FileRoutesByFullPath {
   '/': typeof PrivateIndexRoute
   '/subjects/$subjectId': typeof PrivateSubjectsSubjectIdRouteWithChildren
   '/subjects/new': typeof PrivateSubjectsNewRoute
+  '/tasks/$taskId': typeof PrivateTasksTaskIdRoute
   '/subjects': typeof PrivateSubjectsIndexRoute
   '/tasks': typeof PrivateTasksIndexRoute
   '/subjects/$subjectId/edit': typeof PrivateSubjectsSubjectIdEditRoute
@@ -87,6 +94,7 @@ export interface FileRoutesByTo {
   '/': typeof PrivateIndexRoute
   '/subjects/$subjectId': typeof PrivateSubjectsSubjectIdRouteWithChildren
   '/subjects/new': typeof PrivateSubjectsNewRoute
+  '/tasks/$taskId': typeof PrivateTasksTaskIdRoute
   '/subjects': typeof PrivateSubjectsIndexRoute
   '/tasks': typeof PrivateTasksIndexRoute
   '/subjects/$subjectId/edit': typeof PrivateSubjectsSubjectIdEditRoute
@@ -100,6 +108,7 @@ export interface FileRoutesById {
   '/_private/': typeof PrivateIndexRoute
   '/_private/subjects/$subjectId': typeof PrivateSubjectsSubjectIdRouteWithChildren
   '/_private/subjects/new': typeof PrivateSubjectsNewRoute
+  '/_private/tasks/$taskId': typeof PrivateTasksTaskIdRoute
   '/_private/subjects/': typeof PrivateSubjectsIndexRoute
   '/_private/tasks/': typeof PrivateTasksIndexRoute
   '/_private/subjects/$subjectId/edit': typeof PrivateSubjectsSubjectIdEditRoute
@@ -112,6 +121,7 @@ export interface FileRouteTypes {
     | '/'
     | '/subjects/$subjectId'
     | '/subjects/new'
+    | '/tasks/$taskId'
     | '/subjects'
     | '/tasks'
     | '/subjects/$subjectId/edit'
@@ -122,6 +132,7 @@ export interface FileRouteTypes {
     | '/'
     | '/subjects/$subjectId'
     | '/subjects/new'
+    | '/tasks/$taskId'
     | '/subjects'
     | '/tasks'
     | '/subjects/$subjectId/edit'
@@ -134,6 +145,7 @@ export interface FileRouteTypes {
     | '/_private/'
     | '/_private/subjects/$subjectId'
     | '/_private/subjects/new'
+    | '/_private/tasks/$taskId'
     | '/_private/subjects/'
     | '/_private/tasks/'
     | '/_private/subjects/$subjectId/edit'
@@ -195,6 +207,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrivateSubjectsIndexRouteImport
       parentRoute: typeof PrivateRoute
     }
+    '/_private/tasks/$taskId': {
+      id: '/_private/tasks/$taskId'
+      path: '/tasks/$taskId'
+      fullPath: '/tasks/$taskId'
+      preLoaderRoute: typeof PrivateTasksTaskIdRouteImport
+      parentRoute: typeof PrivateRoute
+    }
     '/_private/subjects/new': {
       id: '/_private/subjects/new'
       path: '/subjects/new'
@@ -238,6 +257,7 @@ interface PrivateRouteChildren {
   PrivateIndexRoute: typeof PrivateIndexRoute
   PrivateSubjectsSubjectIdRoute: typeof PrivateSubjectsSubjectIdRouteWithChildren
   PrivateSubjectsNewRoute: typeof PrivateSubjectsNewRoute
+  PrivateTasksTaskIdRoute: typeof PrivateTasksTaskIdRoute
   PrivateSubjectsIndexRoute: typeof PrivateSubjectsIndexRoute
   PrivateTasksIndexRoute: typeof PrivateTasksIndexRoute
 }
@@ -247,6 +267,7 @@ const PrivateRouteChildren: PrivateRouteChildren = {
   PrivateIndexRoute: PrivateIndexRoute,
   PrivateSubjectsSubjectIdRoute: PrivateSubjectsSubjectIdRouteWithChildren,
   PrivateSubjectsNewRoute: PrivateSubjectsNewRoute,
+  PrivateTasksTaskIdRoute: PrivateTasksTaskIdRoute,
   PrivateSubjectsIndexRoute: PrivateSubjectsIndexRoute,
   PrivateTasksIndexRoute: PrivateTasksIndexRoute,
 }

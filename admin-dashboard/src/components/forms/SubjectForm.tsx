@@ -1,27 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from '@tanstack/react-router';
 import { useFetchData } from '../../hooks/useFetchData';
 import { useMutateData } from '../../hooks/useMutateData';
-import './forms.css';
+import { useActions } from '../../context/ActionsContext';
+import './SubjectForm.css';
 
 interface SubjectFormProps {
   subjectId?: string; 
 }
 
-// Define a type for the Subject object for clarity and type safety
-type Subject = {
-    name: string;
-    description: string;
-}
+type Subject = { name: string; description: string; }
 
+// This 'export' keyword is the critical part that was missing or incorrect.
 export const SubjectForm: React.FC<SubjectFormProps> = ({ subjectId }) => {
-  const navigate = useNavigate();
+  const { closeModal } = useActions();
   const isEditMode = !!subjectId;
 
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
 
-  // The hook is now correctly typed to return a single Subject object (or null)
   const { data: subjectData, isLoading: isLoadingSubject } = useFetchData<Subject>(
     isEditMode ? `/admin/subjects/${subjectId}` : ''
   );
@@ -29,7 +25,6 @@ export const SubjectForm: React.FC<SubjectFormProps> = ({ subjectId }) => {
   const { mutate, isLoading: isMutating, error } = useMutateData();
 
   useEffect(() => {
-    // Check that subjectData is not an array before accessing its properties
     if (isEditMode && subjectData && !Array.isArray(subjectData)) {
       setName(subjectData.name);
       setDescription(subjectData.description);
@@ -46,14 +41,15 @@ export const SubjectForm: React.FC<SubjectFormProps> = ({ subjectId }) => {
       } else {
         await mutate('/admin/subjects', 'POST', payload);
       }
-      navigate({ to: '/subjects' });
+      closeModal();
+      window.location.reload();
     } catch (err) {
       console.error("Failed to save subject:", err);
     }
   };
 
   if (isLoadingSubject) {
-    return <div>Loading subject details...</div>;
+    return <div className="form-card">Loading subject details...</div>;
   }
 
   return (
@@ -62,35 +58,15 @@ export const SubjectForm: React.FC<SubjectFormProps> = ({ subjectId }) => {
       <form onSubmit={handleSubmit} className="form-container">
         <div className="form-group">
           <label htmlFor="name" className="form-label">Subject Name</label>
-          <input
-            id="name"
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="form-input"
-            required
-          />
+          <input id="name" type="text" value={name} onChange={(e) => setName(e.target.value)} className="form-input" required />
         </div>
         <div className="form-group">
           <label htmlFor="description" className="form-label">Description</label>
-          <textarea
-            id="description"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            className="form-textarea"
-            rows={5}
-            required
-          />
+          <textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} className="form-textarea" rows={5} required />
         </div>
-
         {error && <div className="form-error">Error: {error.message}</div>}
-
         <div className="form-actions">
-          <button 
-            type="button" 
-            className="button-secondary" 
-            onClick={() => navigate({ to: '/subjects' })}
-          >
+          <button type="button" className="button-secondary" onClick={closeModal}>
             Cancel
           </button>
           <button type="submit" className="button-primary" disabled={isMutating}>
@@ -101,3 +77,4 @@ export const SubjectForm: React.FC<SubjectFormProps> = ({ subjectId }) => {
     </div>
   );
 };
+

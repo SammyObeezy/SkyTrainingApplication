@@ -1,0 +1,107 @@
+.form-card {
+  width: 100%;
+  max-width: 700px;
+  margin: 0 auto;
+  background-color: var(--surface-color);
+  padding: calc(var(--spacing-unit) * 4);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-md);
+}
+
+.form-title {
+  font-size: 1.75rem;
+  font-weight: 600;
+  margin: 0 0 calc(var(--spacing-unit) * 3) 0;
+  color: var(--text-color-primary);
+}
+
+.form-container {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--spacing-unit) * 2);
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-label {
+  font-weight: 500;
+  margin-bottom: calc(var(--spacing-unit) / 2);
+  color: var(--text-color-secondary);
+}
+
+.form-input,
+.form-textarea,
+.form-select {
+  width: 100%;
+  padding: calc(var(--spacing-unit) * 1.5);
+  font-size: 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  font-family: var(--font-family);
+  transition: border-color 0.2s, box-shadow 0.2s;
+  background-color: var(--surface-color);
+}
+
+.form-input:focus,
+.form-textarea:focus,
+.form-select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-unit);
+  margin-top: calc(var(--spacing-unit) * 2);
+  border-top: 1px solid var(--border-color);
+  padding-top: calc(var(--spacing-unit) * 2);
+}
+
+.button-primary {
+  padding: 12px 20px;
+  font-size: 1rem;
+  border: none;
+  border-radius: var(--border-radius);
+  background-color: var(--primary-color);
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.button-primary:hover {
+  background-color: var(--primary-hover-color);
+}
+
+.button-primary:disabled {
+  background-color: #a0aec0;
+  cursor: not-allowed;
+}
+
+.button-secondary {
+  padding: 12px 20px;
+  font-size: 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  background-color: transparent;
+  color: var(--text-color-primary);
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.button-secondary:hover {
+  background-color: #f8f9fa;
+}
+
+.form-error {
+  color: var(--danger-color);
+  background-color: #fbeae9;
+  border: 1px solid #f5c6cb;
+  padding: var(--spacing-unit);
+  border-radius: var(--border-radius);
+  text-align: center;
+}
