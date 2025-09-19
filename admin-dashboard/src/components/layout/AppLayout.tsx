@@ -1,4 +1,3 @@
-import React from 'react';
 import { Outlet } from '@tanstack/react-router';
 import { Navbar } from '../Navbar/Navbar';
 import { Sidebar } from '../Sidebar/Sidebar';
