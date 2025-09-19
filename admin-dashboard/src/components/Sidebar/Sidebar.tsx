@@ -14,13 +14,28 @@ export const Sidebar = () => {
         <Link to="/" className="nav-link" activeProps={{ className: 'active' }}>
           <DashboardIcon /> Dashboard
         </Link>
-        <Link to="/users" className="nav-link" activeProps={{ className: 'active' }}>
+        <Link 
+          to="/users" 
+          className="nav-link" 
+          activeProps={{ className: 'active' }}
+          search={{ page: 1, filters: {}, sorters: {} }}
+        >
           <UsersIcon /> Users
         </Link>
-        <Link to="/subjects" className="nav-link" activeProps={{ className: 'active' }}>
+        <Link 
+          to="/subjects" 
+          className="nav-link" 
+          activeProps={{ className: 'active' }}
+          search={{ page: 1, filters: {}, sorters: {} }}
+        >
           <SubjectsIcon /> Subjects
         </Link>
-        <Link to="/tasks" className="nav-link" activeProps={{ className: 'active' }}>
+        <Link 
+          to="/tasks" 
+          className="nav-link" 
+          activeProps={{ className: 'active' }}
+          search={{ page: 1, filters: {}, sorters: {} }}
+        >
           <TasksIcon /> Tasks
         </Link>
       </nav>
