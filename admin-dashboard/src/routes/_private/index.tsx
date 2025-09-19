@@ -1,22 +1,51 @@
-import { createFileRoute } from '@tanstack/react-router';
+import { createFileRoute, Link } from '@tanstack/react-router';
+import { UsersIcon, SubjectsIcon, TasksIcon } from '../../components/Icons/Icons';
+import './dashboard.css';
 
 export const Route = createFileRoute('/_private/')({
-  component: Dashboard,
+  component: DashboardPage,
 });
 
-function Dashboard() {
+function DashboardPage() {
   return (
-    <div style={styles.card}>
-      <h1 style={styles.title}>Welcome to the Admin Dashboard</h1>
-      <p style={styles.text}>
-        Select an option from the sidebar to view and manage your data.
-      </p>
+    <div className="dashboard-container">
+      <h1 className="dashboard-title">Dashboard</h1>
+      <p className="dashboard-subtitle">Overview of your application data.</p>
+      
+      <div className="dashboard-grid">
+        <Link 
+          to="/users" 
+          // Provide a search object that matches the route's expectation
+          search={{ page: 1, filters: {}, sorters: {} }} 
+          className="dashboard-card"
+        >
+          <div className="card-icon"><UsersIcon width={28} height={28} /></div>
+          <h2 className="card-title">Manage Users</h2>
+          <p className="card-description">View, edit, and manage user accounts and permissions.</p>
+        </Link>
+        
+        <Link 
+          to="/subjects" 
+          // Add an empty search prop for consistency, assuming we'll add it there later
+          search={{ page: 1, filters: {}, sorters: {} }}
+          className="dashboard-card"
+        >
+          <div className="card-icon"><SubjectsIcon width={28} height={28} /></div>
+          <h2 className="card-title">Manage Subjects</h2>
+          <p className="card-description">Create, update, and organize training subjects.</p>
+        </Link>
+
+        <Link 
+          to="/tasks" 
+          // Add an empty search prop for consistency
+          search={{ page: 1, filters: {}, sorters: {} }}
+          className="dashboard-card"
+        >
+          <div className="card-icon"><TasksIcon width={28} height={28} /></div>
+          <h2 className="card-title">Manage Tasks</h2>
+          <p className="card-description">Assign and manage tasks within each subject.</p>
+        </Link>
+      </div>
     </div>
   );
 }
-
-const styles: { [key: string]: React.CSSProperties } = {
-    card: { backgroundColor: 'var(--surface-color)', padding: 'calc(var(--spacing-unit) * 4)', borderRadius: 'var(--border-radius)', boxShadow: 'var(--shadow-md)' },
-    title: { margin: '0 0 var(--spacing-unit) 0', fontSize: '1.8rem', color: 'var(--text-color-primary)'},
-    text: { margin: 0, color: 'var(--text-color-secondary)', fontSize: '1rem' }
-};

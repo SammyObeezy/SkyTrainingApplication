@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from '@tanstack/react-router';
 import { useFetchData } from '../../hooks/useFetchData';
 import { useMutateData } from '../../hooks/useMutateData';
 import { useActions } from '../../context/ActionsContext';
@@ -10,9 +11,9 @@ interface SubjectFormProps {
 
 type Subject = { name: string; description: string; }
 
-// This 'export' keyword is the critical part that was missing or incorrect.
 export const SubjectForm: React.FC<SubjectFormProps> = ({ subjectId }) => {
   const { closeModal } = useActions();
+  const navigate = useNavigate();
   const isEditMode = !!subjectId;
 
   const [name, setName] = useState('');
@@ -38,13 +39,24 @@ export const SubjectForm: React.FC<SubjectFormProps> = ({ subjectId }) => {
     try {
       if (isEditMode) {
         await mutate(`/admin/subjects/${subjectId}`, 'PUT', payload);
+        closeModal();
       } else {
         await mutate('/admin/subjects', 'POST', payload);
+        // Add the empty search object here
+        navigate({ to: '/subjects', search: { page: 1, filters: {}, sorters: {} } });
       }
-      closeModal();
       window.location.reload();
     } catch (err) {
       console.error("Failed to save subject:", err);
+    }
+  };
+  
+  const handleCancel = () => {
+    if (isEditMode) {
+      closeModal();
+    } else {
+      // Add the empty search object here
+      navigate({ to: '/subjects', search: { page: 1, filters: {}, sorters: {} } });
     }
   };
 
@@ -66,7 +78,7 @@ export const SubjectForm: React.FC<SubjectFormProps> = ({ subjectId }) => {
         </div>
         {error && <div className="form-error">Error: {error.message}</div>}
         <div className="form-actions">
-          <button type="button" className="button-secondary" onClick={closeModal}>
+          <button type="button" className="button-secondary" onClick={handleCancel}>
             Cancel
           </button>
           <button type="submit" className="button-primary" disabled={isMutating}>
@@ -77,4 +89,3 @@ export const SubjectForm: React.FC<SubjectFormProps> = ({ subjectId }) => {
     </div>
   );
 };
-

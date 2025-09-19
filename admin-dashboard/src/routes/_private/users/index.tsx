@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from '@tanstack/react-router';
+import { createFileRoute } from '@tanstack/react-router';
 import {
   TableProvider,
   TableWithContext,
@@ -8,40 +8,36 @@ import {
 } from '../../../context/TableContext';
 import { PageHeader } from '../../../components/PageHeader/PageHeader';
 import { useUrlTableState } from '../../../hooks/useUrlTableState';
-import './subjects.css';
 
-// 1. Define the schema for the URL search parameters
+// Define a schema to tell the route which search parameters are valid.
 const tableSearchSchema = {
     page: (page: number | undefined) => page || 1,
     filters: (filters: Record<string, string> | undefined) => filters || {},
     sorters: (sorters: Record<string, string> | undefined) => sorters || {},
 };
 
-export const Route = createFileRoute('/_private/subjects/')({
-  // 2. Validate the search params to make them type-safe
+export const Route = createFileRoute('/_private/users/')({
   validateSearch: (search: Record<string, unknown>) => ({
     page: tableSearchSchema.page(search.page as number | undefined),
     filters: tableSearchSchema.filters(search.filters as Record<string, string> | undefined),
     sorters: tableSearchSchema.sorters(search.sorters as Record<string, string> | undefined),
   }),
-  component: SubjectsPage,
+  component: UsersPage,
 });
 
-function SubjectsPage() {
-  // 3. Use our custom hook to manage state and sync it with the URL
-  const [tableState, setTableState] = useUrlTableState(Route);
+function UsersPage() {
+  const [tableState, setTableState] = useUrlTableState(Route, [
+    { column: 'id', order: 'asc' }
+  ]);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-unit)' }}>
       <TableProvider
-        config={{ type: 'subjects' }}
+        config={{ type: 'users' }}
         state={tableState}
         onStateChange={(newState) => setTableState((prev) => ({ ...prev, ...newState }))}
       >
-        <PageHeader title="Manage Subjects">
-          <Link to="/subjects/new" className="create-button">
-            Create Subject
-          </Link>
+        <PageHeader title="Manage Users">
           <TableControlsWithContext />
         </PageHeader>
         

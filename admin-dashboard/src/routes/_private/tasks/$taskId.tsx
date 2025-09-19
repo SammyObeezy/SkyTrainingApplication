@@ -1,6 +1,5 @@
 import React from 'react';
 import { createFileRoute } from '@tanstack/react-router';
-// This is the correct import path for the hook
 import { useFetchData } from '../../../hooks/useFetchData';
 
 export const Route = createFileRoute('/_private/tasks/$taskId')({
@@ -18,7 +17,6 @@ type Task = {
 }
 
 function TaskDetailPage() {
-  // Get the taskId directly from the URL. No decoding is needed.
   const { taskId } = Route.useParams();
 
   const { data: task, isLoading, error } = useFetchData<Task>(`/admin/tasks/${taskId}`);
@@ -54,4 +52,3 @@ const styles: { [key: string]: React.CSSProperties } = {
     meta: { display: 'flex', gap: '24px', color: 'var(--text-color-secondary)', marginBottom: '24px', paddingBottom: '16px', borderBottom: '1px solid var(--border-color)' },
     section: { marginBottom: '16px' },
 };
-

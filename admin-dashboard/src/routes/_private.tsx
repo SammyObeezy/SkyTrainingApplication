@@ -1,22 +1,31 @@
+import { useState, useEffect } from 'react';
 import { createFileRoute, Navigate } from '@tanstack/react-router';
-import { AppLayout } from '../components/layout/AppLayout';
 import { useAuth } from '../context/ApiProvider';
+import { AppLayout } from '../components/layout/AppLayout';
 
 export const Route = createFileRoute('/_private')({
   component: PrivateRouteLayout,
 });
 
 function PrivateRouteLayout() {
-  const { isAuthenticated } = useAuth();
+  const { token } = useAuth();
+  const [isAuthCheckComplete, setIsAuthCheckComplete] = useState(false);
 
-  // This is the guard clause that protects all child routes.
-  // If the user is not authenticated, they are redirected.
-  if (!isAuthenticated) {
+  useEffect(() => {
+    // This effect runs once to check if the token has been loaded from localStorage
+    setIsAuthCheckComplete(true);
+  }, [token]);
+
+  // While we're checking for the token, show a loading screen
+  if (!isAuthCheckComplete) {
+    return <div>Loading session...</div>;
+  }
+
+  // After the check is complete, if there's no token, redirect to login
+  if (!token) {
     return <Navigate to="/login" />;
   }
 
-  // If the user is authenticated, render the main AppLayout.
-  // The AppLayout will then render the specific page (e.g., Users, Subjects)
-  // via its <Outlet />.
+  // If a token exists, show the main application layout
   return <AppLayout />;
 }
