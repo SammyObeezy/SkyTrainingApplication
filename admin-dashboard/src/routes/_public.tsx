@@ -1,4 +1,3 @@
-import React from 'react';
 import { createFileRoute, Outlet, Navigate } from '@tanstack/react-router';
 import { useAuth } from '../context/ApiProvider';
 
