@@ -1,4 +1,3 @@
-import React from 'react';
 import { createRootRoute, Outlet, Link } from '@tanstack/react-router';
 // Corrected import path for the devtools
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools';
