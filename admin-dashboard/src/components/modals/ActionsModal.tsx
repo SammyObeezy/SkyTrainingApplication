@@ -1,4 +1,3 @@
-import React from 'react';
 import { useActions } from '../../context/ActionsContext';
 import { useMutateData } from '../../hooks/useMutateData';
 import { UserForm } from '../forms/UserForm';
