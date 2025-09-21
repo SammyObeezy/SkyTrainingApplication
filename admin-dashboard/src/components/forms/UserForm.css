@@ -32,9 +32,7 @@
   color: var(--text-color-secondary);
 }
 
-.form-input,
-.form-textarea,
-.form-select {
+.form-input, .form-textarea, .form-select {
   width: 100%;
   padding: calc(var(--spacing-unit) * 1.5);
   font-size: 1rem;
@@ -45,9 +43,7 @@
   background-color: var(--surface-color);
 }
 
-.form-input:focus,
-.form-textarea:focus,
-.form-select:focus {
+.form-input:focus, .form-textarea:focus, .form-select:focus {
   outline: none;
   border-color: var(--primary-color);
   box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
@@ -104,4 +100,170 @@
   padding: var(--spacing-unit);
   border-radius: var(--border-radius);
   text-align: center;
+}
+
+/* Avatar Upload Section */
+.avatar-upload-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(var(--spacing-unit) * 1.5);
+  padding: calc(var(--spacing-unit) * 2);
+  border: 2px dashed var(--border-color);
+  border-radius: var(--border-radius);
+  background-color: #f8f9fa;
+  margin-bottom: calc(var(--spacing-unit) * 2);
+}
+
+.avatar-preview {
+  position: relative;
+  display: inline-block;
+}
+
+.avatar-preview img,
+.avatar-preview .avatar-placeholder {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--border-color);
+}
+
+.avatar-placeholder {
+  background-color: var(--surface-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  font-weight: bold;
+  color: var(--text-color-secondary);
+}
+
+.avatar-upload-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-unit);
+}
+
+.file-input-wrapper {
+  position: relative;
+  overflow: hidden;
+  display: inline-block;
+}
+
+.file-input-wrapper input[type=file] {
+  position: absolute;
+  left: -9999px;
+  opacity: 0;
+}
+
+.file-input-label {
+  display: inline-block;
+  padding: 8px 16px;
+  font-size: 0.875rem;
+  border: 1px solid var(--primary-color);
+  border-radius: var(--border-radius);
+  background-color: transparent;
+  color: var(--primary-color);
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+}
+
+.file-input-label:hover {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.remove-avatar-btn {
+  padding: 6px 12px;
+  font-size: 0.75rem;
+  border: 1px solid var(--danger-color);
+  border-radius: var(--border-radius);
+  background-color: transparent;
+  color: var(--danger-color);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.remove-avatar-btn:hover {
+  background-color: var(--danger-color);
+  color: white;
+}
+
+.upload-hint {
+  font-size: 0.75rem;
+  color: var(--text-color-secondary);
+  text-align: center;
+  margin-top: calc(var(--spacing-unit) / 2);
+}
+
+/* Form Header with Avatar */
+.form-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: calc(var(--spacing-unit) * 2);
+  padding-bottom: calc(var(--spacing-unit) * 2);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.form-header-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--border-color);
+}
+
+.form-header-avatar-placeholder {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background-color: #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: bold;
+  color: #718096;
+  border: 2px solid var(--border-color);
+}
+
+.form-header-info h1 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.form-header-info p {
+  margin: 4px 0 0 0;
+  font-size: 0.875rem;
+  color: var(--text-color-secondary);
+}
+
+/* Image Preview for Upload */
+.image-preview {
+  max-width: 200px;
+  max-height: 200px;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--border-color);
+  margin-top: var(--spacing-unit);
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+  .avatar-upload-section {
+    padding: var(--spacing-unit);
+  }
+  
+  .form-header {
+    flex-direction: column;
+    text-align: center;
+    align-items: center;
+  }
+  
+  .avatar-upload-controls {
+    flex-direction: column;
+  }
 }

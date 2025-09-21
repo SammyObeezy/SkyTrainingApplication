@@ -4,7 +4,18 @@ import "./TableManager.css";
 
 // --- INTERFACES ---
 export interface TableAction { id: string; icon: string; title: string; handler?: (rowId: any) => void; type?: 'button' | 'link'; to?: string; getParams?: (row: any) => Record<string, string>; }
-export interface TableColumn { id: string; caption: string; filterable?: boolean; sortable?: boolean; size?: number; align?: 'left' | 'center' | 'right'; type?: 'string' | 'number' | 'date'; hide?: boolean; render?: (row: any) => React.ReactNode; }
+export interface TableColumn { 
+  id: string; 
+  caption: string; 
+  filterable?: boolean; 
+  sortable?: boolean; 
+  size?: number; 
+  align?: 'left' | 'center' | 'right'; 
+  type?: 'string' | 'number' | 'date' | 'status'; 
+  hide?: boolean; 
+  render?: (row: any) => React.ReactNode;
+  statusColors?: Record<string, { backgroundColor: string; color: string }>;
+}
 export interface FilterRule { column: string; relation: 'equals' | 'contains' | 'startsWith'; value: string; }
 export interface SortRule { column: string; order: 'asc' | 'desc'; }
 export interface TableState { page: number; filters: FilterRule[]; sorters: SortRule[]; }
@@ -31,9 +42,40 @@ const SVGIcons = {
   add: <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M13 8H8V13C8 13.55 7.55 14 7 14C6.45 14 6 13.55 6 13V8H1C0.45 8 0 7.55 0 7C0 6.45 0.45 6 1 6H6V1C6 0.45 6.45 0 7 0C7.55 0 8 0.45 8 1V6H13C13.55 6 14 6.45 14 7C14 7.55 13.55 8 13 8Z" fill="currentColor"/></svg>,
   delete: <svg width="24" height="24" viewBox="0 0 24 24"><path d="M9 3V4H4V6H5V19C5 20.1 5.9 21 7 21H17c1.1 0 2-.9 2-2V6h1V4h-5V3H9zM7 6h10v13H7V6zm2 2v9h2V8H9zm4 0v9h2V8h-2z" fill="#A10900"/></svg>,
 };
+
 const escapeHtml = (unsafe: any): string => {
   if (unsafe === null || unsafe === undefined) return '—';
   return unsafe.toString().replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+};
+
+const StatusBadge: React.FC<{ 
+  status: string; 
+  colors?: Record<string, { backgroundColor: string; color: string }> 
+}> = ({ status, colors = {} }) => {
+  const statusStyles: React.CSSProperties = { 
+    padding: '4px 8px', 
+    borderRadius: '12px', 
+    fontSize: '12px', 
+    fontWeight: 500, 
+    textTransform: 'capitalize' 
+  };
+  
+  const defaultColors = {
+    active: { backgroundColor: '#e7f7ef', color: '#00c853' },
+    approved: { backgroundColor: '#e7f7ef', color: '#00c853' },
+    inactive: { backgroundColor: '#fff4e5', color: '#ff9800' },
+    pending: { backgroundColor: '#fff4e5', color: '#ff9800' },
+    moderator: { backgroundColor: '#e3f2fd', color: '#2196f3' },
+    admin: { backgroundColor: '#ede7f6', color: '#673ab7' },
+    user: { backgroundColor: '#f3e5f5', color: '#9c27b0' },
+    trainee: { backgroundColor: '#f3e5f5', color: '#9c27b0' },
+    rejected: { backgroundColor: '#fbeae9', color: '#dc3545' }
+  };
+  
+  const mergedColors = { ...defaultColors, ...colors };
+  const style = mergedColors[status.toLowerCase() as keyof typeof mergedColors] || {};
+  
+  return <span style={{ ...statusStyles, ...style }}>{status}</span>;
 };
 
 // --- SUB-COMPONENTS ---
@@ -89,7 +131,16 @@ const TableManager = forwardRef<any, TableManagerProps>(({
                 const rowId = row.id ?? index;
                 return (
                   <tr key={rowId} data-id={rowId}>
-                    {columns.filter(col => !col.hide).map(col => (<td key={col.id} style={{ textAlign: col.align || 'left' }}>{col.render ? col.render(row) : escapeHtml(row[col.id])}</td>))}
+                    {columns.filter(col => !col.hide).map(col => (
+                      <td key={col.id} style={{ textAlign: col.align || 'left' }}>
+                        {col.render ? 
+                          col.render(row) : 
+                          col.type === 'status' ? 
+                            <StatusBadge status={row[col.id]} colors={col.statusColors} /> :
+                            escapeHtml(row[col.id])
+                        }
+                      </td>
+                    ))}
                     {actions.length > 0 && (
                       <td style={{ textAlign: 'center' }}>
                         <div className="ticket-actions">

@@ -6,13 +6,6 @@ import { useFetchData } from '../hooks/useFetchData';
 import { useActions } from './ActionsContext';
 import { ViewIcon, EditIcon, DeleteIcon } from '../components/Icons/Icons';
 
-const StatusBadge: React.FC<{ status: string }> = ({ status }) => {
-  const statusStyles: React.CSSProperties = { padding: '4px 8px', borderRadius: '12px', fontSize: '12px', fontWeight: 500, textTransform: 'capitalize' };
-  const statusColors = { active: { backgroundColor: '#e7f7ef', color: '#00c853' }, approved: { backgroundColor: '#e7f7ef', color: '#00c853' }, inactive: { backgroundColor: '#fff4e5', color: '#ff9800' }, pending: { backgroundColor: '#fff4e5', color: '#ff9800' }, moderator: { backgroundColor: '#e3f2fd', color: '#2196f3' }, admin: { backgroundColor: '#ede7f6', color: '#673ab7' }, user: { backgroundColor: '#f3e5f5', color: '#9c27b0' }, trainee: { backgroundColor: '#f3e5f5', color: '#9c27b0' }, rejected: { backgroundColor: '#fbeae9', color: '#dc3545' } };
-  const style = statusColors[status.toLowerCase() as keyof typeof statusColors] || {};
-  return <span style={{ ...statusStyles, ...style }}>{status}</span>;
-};
-
 export interface TableState { page: number; filters: FilterRule[]; sorters: SortRule[]; }
 type UserConfig = { type: 'users' };
 type SubjectConfig = { type: 'subjects' };
@@ -78,17 +71,62 @@ export const TableProvider: React.FC<TableProviderProps> = ({
     }
     return processed;
   }, [pageData, state.filters, state.sorters]);
+  
+  const statusColors = {
+    active: { backgroundColor: '#e7f7ef', color: '#00c853' },
+    approved: { backgroundColor: '#e7f7ef', color: '#00c853' },
+    inactive: { backgroundColor: '#fff4e5', color: '#ff9800' },
+    pending: { backgroundColor: '#fff4e5', color: '#ff9800' },
+    moderator: { backgroundColor: '#e3f2fd', color: '#2196f3' },
+    admin: { backgroundColor: '#ede7f6', color: '#673ab7' },
+    user: { backgroundColor: '#f3e5f5', color: '#9c27b0' },
+    trainee: { backgroundColor: '#f3e5f5', color: '#9c27b0' },
+    rejected: { backgroundColor: '#fbeae9', color: '#dc3545' }
+  };
+
   const columns: TableColumn[] = useMemo(() => {
     switch (config.type) {
       case 'users':
         return [
           { id: 'id', caption: 'ID', sortable: true, size: 80 },
-          // The name is no longer a link
+          { 
+            id: 'avatar_url', 
+            caption: 'Avatar', 
+            size: 60, 
+            align: 'center',
+            render: (row) => row.avatar_url ? 
+              <img src={row.avatar_url} alt={row.name} style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover' }} /> : 
+              <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: '#e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', color: '#718096' }}>
+                {row.name?.charAt(0)?.toUpperCase() || '?'}
+              </div>
+          },
           { id: 'name', caption: 'Name', filterable: true, sortable: true, size: 200 },
           { id: 'email', caption: 'Email', filterable: true, sortable: true },
-          { id: 'role', caption: 'Role', filterable: true, sortable: true, render: (row) => <StatusBadge status={row.role} />, size: 150 },
-          { id: 'status', caption: 'Status', filterable: true, sortable: true, render: (row) => <StatusBadge status={row.status} />, size: 150 },
-          { id: 'created_at', caption: 'Created', sortable: true, render: (row) => new Date(row.created_at).toLocaleDateString(), size: 150 },
+          { 
+            id: 'role', 
+            caption: 'Role', 
+            filterable: true, 
+            sortable: true, 
+            type: 'status',
+            statusColors,
+            size: 150 
+          },
+          { 
+            id: 'status', 
+            caption: 'Status', 
+            filterable: true, 
+            sortable: true, 
+            type: 'status',
+            statusColors,
+            size: 150 
+          },
+          { 
+            id: 'created_at', 
+            caption: 'Created', 
+            sortable: true, 
+            render: (row) => new Date(row.created_at).toLocaleDateString(), 
+            size: 150 
+          },
         ];
       case 'subjects':
         return [
@@ -105,7 +143,7 @@ export const TableProvider: React.FC<TableProviderProps> = ({
         ];
       default: return [];
     }
-  }, [config.type]);
+  }, [config.type, statusColors]);
 
   const actions: TableAction[] = useMemo(() => {
     const viewIcon = ReactDOMServer.renderToStaticMarkup(<ViewIcon />);
