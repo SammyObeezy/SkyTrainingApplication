@@ -16,19 +16,28 @@ export const useMutateData = <T,>() => {
         setError(new Error("No authentication token found."));
         return;
     }
-    
+         
     setIsLoading(true);
     setError(null);
     setData(null);
 
     try {
+      // Check if body is FormData
+      const isFormData = body instanceof FormData;
+      
+      const headers: Record<string, string> = {
+        'Authorization': `Bearer ${token}`,
+      };
+      
+      // Only add Content-Type for JSON data
+      if (!isFormData) {
+        headers['Content-Type'] = 'application/json';
+      }
+
       const response = await fetch(`${API_BASE_URL}${endpoint}`, {
         method,
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: body ? JSON.stringify(body) : null,
+        headers,
+        body: body ? (isFormData ? body : JSON.stringify(body)) : null,
       });
 
       if (!response.ok) {
