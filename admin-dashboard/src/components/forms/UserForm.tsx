@@ -61,11 +61,15 @@ export const UserForm: React.FC<UserFormProps> = ({ userId, mode = 'admin' }) =>
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      // Use the original working endpoints
+      // Update role and status using working endpoints
       await updateUser(`/admin/users/${userId}/role`, 'PUT', { role });
       await updateUser(`/admin/users/${userId}/status`, 'PUT', { status });
       
-      // TODO: Add separate endpoints for name/email/avatar when available
+      // Show success message for what was updated
+      console.log('Role and status updated successfully');
+      console.log('Note: Name, email, and avatar updates require additional API endpoints');
+      
+      // TODO: Uncomment when API endpoints are available
       // await updateUser(`/admin/users/${userId}/profile`, 'PUT', { name, email });
       // if (avatarFile) {
       //   const formData = new FormData();
@@ -74,7 +78,6 @@ export const UserForm: React.FC<UserFormProps> = ({ userId, mode = 'admin' }) =>
       // }
       
       closeModal();
-      // window.location.reload();
     } catch (err) {
       console.error("Failed to update user:", err);
     }
