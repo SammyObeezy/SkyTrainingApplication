@@ -1,3 +1,4 @@
+import React, { useContext } from 'react';
 import { useActions } from '../../context/ActionsContext';
 import { useMutateData } from '../../hooks/useMutateData';
 import { UserForm } from '../forms/UserForm';
@@ -5,9 +6,18 @@ import { SubjectForm } from '../forms/SubjectForm';
 import { TaskForm } from '../forms/TaskForm';
 import './ActionsModal.css';
 
-// The 'export' keyword here makes the component available for other files to import.
+// Import the context directly to check if we're inside a provider
+const TableContext = React.createContext<any>(null);
+
+// Safe hook that doesn't throw if not in TableProvider
+const useSafeTableContext = () => {
+  const context = useContext(TableContext);
+  return context || { refetch: null };
+};
+
 export const ActionsModal = () => {
   const { modalType, entityType, entityId, closeModal } = useActions();
+  const { refetch } = useSafeTableContext();
   const { mutate, isLoading } = useMutateData();
 
   const handleDelete = async () => {
@@ -17,7 +27,11 @@ export const ActionsModal = () => {
     try {
       await mutate(endpoint, 'DELETE');
       closeModal();
-      window.location.reload(); 
+      if (refetch) {
+        refetch();
+      } else {
+        window.location.reload();
+      }
     } catch (err) {
       if (err instanceof Error) {
         alert(`Failed to delete: ${err.message}`);
@@ -30,7 +44,7 @@ export const ActionsModal = () => {
   if (!modalType) {
     return null;
   }
-  
+     
   if (modalType === 'delete') {
     return (
       <div className="modal-overlay" onClick={closeModal}>
@@ -54,7 +68,7 @@ export const ActionsModal = () => {
     if (!entityId) return null;
     switch (entityType) {
       case 'users':
-        return <UserForm userId={entityId.toString()} />;
+        return <UserForm userId={entityId.toString()} onSuccess={refetch || (() => window.location.reload())} />;
       case 'subjects':
         return <SubjectForm subjectId={entityId.toString()} />;
       case 'tasks':
@@ -65,7 +79,7 @@ export const ActionsModal = () => {
   };
 
   if (modalType === 'edit') {
-     return (
+    return (
       <div className="modal-overlay" onClick={closeModal}>
         <div className="modal-content form-modal" onClick={(e) => e.stopPropagation()}>
           {renderEditForm()}
@@ -76,4 +90,3 @@ export const ActionsModal = () => {
 
   return null;
 };
-

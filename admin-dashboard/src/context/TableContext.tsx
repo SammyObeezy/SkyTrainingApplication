@@ -33,10 +33,13 @@ export const TableProvider: React.FC<TableProviderProps> = ({
       default: throw new Error('Invalid table config type');
     }
   }, [config.type]);
-  const { data: pageData, pagination, isLoading, error } = useFetchData(endpoint, {
+  
+  // Add refetch to the destructured values
+  const { data: pageData, pagination, isLoading, error, refetch } = useFetchData(endpoint, {
     tableState: state,
     pageSize: rowsPerPage,
   });
+  
   const processedData = useMemo(() => {
     if (!pageData || !Array.isArray(pageData)) return [];
     let processed = [...pageData];
@@ -165,7 +168,22 @@ export const TableProvider: React.FC<TableProviderProps> = ({
     return createActions(config.type);
   }, [config.type, openModal]);
 
-  const contextValue = { state, data: processedData, totalRecords: pagination?.total_count || 0, isLoading, error: error?.message || null, updateState: onStateChange, columns, actions, rowsPerPage, emptyMessage: `No ${config.type} found.`, tableManagerRef, getControlStatus: () => ({ filterCount: state.filters.length, sorterCount: state.sorters.length }) };
+  // Add refetch to the context value
+  const contextValue = { 
+    state, 
+    data: processedData, 
+    totalRecords: pagination?.total_count || 0, 
+    isLoading, 
+    error: error?.message || null, 
+    updateState: onStateChange, 
+    columns, 
+    actions, 
+    rowsPerPage, 
+    emptyMessage: `No ${config.type} found.`, 
+    tableManagerRef, 
+    getControlStatus: () => ({ filterCount: state.filters.length, sorterCount: state.sorters.length }),
+    refetch // Add this line
+  };
 
   return (<TableContext.Provider value={contextValue}>{children}</TableContext.Provider>);
 };

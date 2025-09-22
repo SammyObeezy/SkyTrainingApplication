@@ -7,6 +7,7 @@ import './UserForm.css';
 interface UserFormProps {
   userId: string;
   mode?: 'admin' | 'profile';
+  onSuccess?: () => void;
 }
 
 type User = {
@@ -17,7 +18,7 @@ type User = {
   avatar_url: string | null;
 }
 
-export const UserForm: React.FC<UserFormProps> = ({ userId, mode = 'admin' }) => {
+export const UserForm: React.FC<UserFormProps> = ({ userId, mode = 'admin', onSuccess }) => {
   const { closeModal } = useActions();
      
   const [name, setName] = useState('');
@@ -61,23 +62,19 @@ export const UserForm: React.FC<UserFormProps> = ({ userId, mode = 'admin' }) =>
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      // Update role and status using working endpoints
       await updateUser(`/admin/users/${userId}/role`, 'PUT', { role });
       await updateUser(`/admin/users/${userId}/status`, 'PUT', { status });
       
-      // Show success message for what was updated
-      console.log('Role and status updated successfully');
-      console.log('Note: Name, email, and avatar updates require additional API endpoints');
+      if (avatarFile) {
+        console.log('Avatar file selected but not uploaded yet - API endpoint needed:', avatarFile.name);
+      }
       
-      // TODO: Uncomment when API endpoints are available
-      // await updateUser(`/admin/users/${userId}/profile`, 'PUT', { name, email });
-      // if (avatarFile) {
-      //   const formData = new FormData();
-      //   formData.append('avatar', avatarFile);
-      //   await updateUser(`/admin/users/${userId}/avatar`, 'PUT', formData);
-      // }
+      console.log('Role and status updated successfully');
       
       closeModal();
+      if (onSuccess) {
+        onSuccess();
+      }
     } catch (err) {
       console.error("Failed to update user:", err);
     }
