@@ -4,6 +4,7 @@ import { useMutateData } from '../../hooks/useMutateData';
 import { useActions } from '../../context/ActionsContext';
 import { useRefetch } from '../../hooks/useRefetch';
 import './TaskForm.css';
+import { useIdEncoder } from '../../hooks/useIdEncoder';
 
 interface TaskFormProps {
   taskId: string;
@@ -26,12 +27,15 @@ type Subject = {
 export const TaskForm: React.FC<TaskFormProps> = ({ taskId }) => {
   const { closeModal } = useActions();
   const { refetch } = useRefetch();
+  const { decode } = useIdEncoder();
   const isEditMode = taskId !== 'new';
+
+  const actualTaskId = isEditMode ? decode(taskId) : null;
 
   const [formState, setFormState] = useState<Partial<Task>>({});
 
   const { data: taskResponse, isLoading: isLoadingTask } = useFetchData<any>(
-    `/admin/tasks/${taskId}`
+    `/admin/tasks/${actualTaskId}`
   );
   
   const { data: subjectsResponse, isLoading: isLoadingSubjects } = useFetchData<any>('/admin/subjects');
@@ -107,7 +111,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({ taskId }) => {
     
     try {
       if (isEditMode) {
-        await mutate(`/admin/tasks/${taskId}`, 'PUT', submitData);
+        await mutate(`/admin/tasks/${actualTaskId}`, 'PUT', submitData);
       } else {
         await mutate('/admin/tasks', 'POST', submitData);
       }

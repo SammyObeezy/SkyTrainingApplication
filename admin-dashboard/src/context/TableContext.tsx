@@ -5,6 +5,7 @@ import TableControls from '../components/TableControls/TableControls';
 import { useFetchData } from '../hooks/useFetchData';
 import { useActions } from './ActionsContext';
 import { ViewIcon, EditIcon, DeleteIcon } from '../components/Icons/Icons';
+import { useIdEncoder } from '../hooks/useIdEncoder';
 
 export interface TableState { page: number; filters: FilterRule[]; sorters: SortRule[]; }
 type UserConfig = { type: 'users' };
@@ -202,7 +203,17 @@ export const TableProvider: React.FC<TableProviderProps> = ({
       };
       const paramKey = paramMap[type];
       return [
-        { id: 'view', title: `View ${type}`, icon: viewIcon, type: 'link' as const, to: `/${type}/$${paramKey}`, getParams: (row: any) => ({ [paramKey]: row.id.toString() }) },
+        { 
+  id: 'view', 
+  title: `View ${type}`, 
+  icon: viewIcon, 
+  type: 'link' as const, 
+  to: `/${type}/$${paramKey}`, 
+  getParams: (row: any) => {
+    const { encode } = useIdEncoder();
+    return { [paramKey]: encode(row.id) };
+  }
+},
         { id: 'edit', title: `Edit ${type}`, icon: editIcon, handler: (rowId: any) => openModal('edit', type, rowId) },
         { id: 'delete', title: `Delete ${type}`, icon: deleteIcon, handler: (rowId: any) => openModal('delete', type, rowId) },
       ];

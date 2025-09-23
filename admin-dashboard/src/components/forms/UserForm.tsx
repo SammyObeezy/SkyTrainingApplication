@@ -4,6 +4,7 @@ import { useMutateData } from '../../hooks/useMutateData';
 import { useActions } from '../../context/ActionsContext';
 import { useRefetch } from '../../hooks/useRefetch';
 import './UserForm.css';
+import { useIdEncoder } from '../../hooks/useIdEncoder';
 
 interface UserFormProps {
   userId: string;
@@ -22,7 +23,11 @@ type User = {
 export const UserForm: React.FC<UserFormProps> = ({ userId, mode = 'admin', onSuccess }) => {
   const { closeModal } = useActions();
   const { refetch } = useRefetch();
-     
+
+  const { decode } = useIdEncoder();
+
+  const actualUserId = decode(userId);
+
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [role, setRole] = useState<'admin' | 'trainee'>('trainee');
@@ -31,10 +36,10 @@ export const UserForm: React.FC<UserFormProps> = ({ userId, mode = 'admin', onSu
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
 
   const { data: userData, isLoading: isLoadingUser } = useFetchData<User>(
-    `/admin/users/${userId}`,
+    `/admin/users/${actualUserId}`,
     { tableState: { page: 1, filters: [], sorters: [] } }
   );
-     
+
   const { mutate: updateUser, isLoading: isMutating, error } = useMutateData();
 
   useEffect(() => {
@@ -64,20 +69,20 @@ export const UserForm: React.FC<UserFormProps> = ({ userId, mode = 'admin', onSu
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await updateUser(`/admin/users/${userId}/role`, 'PUT', { role });
-      await updateUser(`/admin/users/${userId}/status`, 'PUT', { status });
-      
+      await updateUser(`/admin/users/${actualUserId}/role`, 'PUT', { role });
+      await updateUser(`/admin/users/${actualUserId}/status`, 'PUT', { status });
+
       if (avatarFile) {
         console.log('Avatar file selected but not uploaded yet - API endpoint needed:', avatarFile.name);
       }
-      
+
       console.log('Role and status updated successfully');
-      
+
       closeModal();
-      
+
       // Use seamless refetch instead of onSuccess callback
       refetch({ resetToFirstPage: false }); // Stay on current page for user edits
-      
+
       // Still call onSuccess if provided for backward compatibility
       if (onSuccess) {
         onSuccess();
@@ -90,16 +95,16 @@ export const UserForm: React.FC<UserFormProps> = ({ userId, mode = 'admin', onSu
   if (isLoadingUser) {
     return <div className="form-card">Loading user details...</div>;
   }
-     
+
   const user = userData as User;
 
   return (
     <div className="form-card">
       <div className="form-header">
         {user?.avatar_url ? (
-          <img 
-            src={user.avatar_url} 
-            alt={user.name} 
+          <img
+            src={user.avatar_url}
+            alt={user.name}
             className="form-header-avatar"
           />
         ) : (
@@ -114,7 +119,7 @@ export const UserForm: React.FC<UserFormProps> = ({ userId, mode = 'admin', onSu
           <p>{user?.email}</p>
         </div>
       </div>
-      
+
       <form onSubmit={handleSubmit} className="form-container">
         <div className="avatar-upload-section">
           <div className="avatar-preview">
@@ -160,7 +165,7 @@ export const UserForm: React.FC<UserFormProps> = ({ userId, mode = 'admin', onSu
             required
           />
         </div>
-        
+
         <div className="form-group">
           <label htmlFor="email" className="form-label">Email Address</label>
           <input
@@ -175,23 +180,23 @@ export const UserForm: React.FC<UserFormProps> = ({ userId, mode = 'admin', onSu
 
         <div className="form-group">
           <label htmlFor="role" className="form-label">Role</label>
-          <select 
-            id="role" 
-            value={role} 
-            onChange={(e) => setRole(e.target.value as User['role'])} 
+          <select
+            id="role"
+            value={role}
+            onChange={(e) => setRole(e.target.value as User['role'])}
             className="form-input"
           >
             <option value="trainee">Trainee</option>
             <option value="admin">Admin</option>
           </select>
         </div>
-        
+
         <div className="form-group">
           <label htmlFor="status" className="form-label">Status</label>
-          <select 
-            id="status" 
-            value={status} 
-            onChange={(e) => setStatus(e.target.value as User['status'])} 
+          <select
+            id="status"
+            value={status}
+            onChange={(e) => setStatus(e.target.value as User['status'])}
             className="form-input"
           >
             <option value="pending">Pending</option>
@@ -199,9 +204,9 @@ export const UserForm: React.FC<UserFormProps> = ({ userId, mode = 'admin', onSu
             <option value="rejected">Rejected</option>
           </select>
         </div>
-         
+
         {error && <div className="form-error">Error: {error.message}</div>}
-         
+
         <div className="form-actions">
           <button type="button" className="button-secondary" onClick={closeModal}>
             Cancel

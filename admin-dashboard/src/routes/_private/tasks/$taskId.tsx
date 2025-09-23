@@ -1,6 +1,7 @@
 import React from 'react';
 import { createFileRoute } from '@tanstack/react-router';
 import { useFetchData } from '../../../hooks/useFetchData';
+import { useIdEncoder } from '../../../hooks/useIdEncoder';
 
 export const Route = createFileRoute('/_private/tasks/$taskId')({
   component: TaskDetailPage,
@@ -19,7 +20,11 @@ type Task = {
 function TaskDetailPage() {
   const { taskId } = Route.useParams();
 
-  const { data: task, isLoading, error } = useFetchData<Task>(`/admin/tasks/${taskId}`);
+  const { decode } = useIdEncoder();
+  
+  const actualTaskId = decode(taskId);
+
+  const { data: task, isLoading, error } = useFetchData<Task>(`/admin/tasks/${actualTaskId}`);
 
   if (isLoading) return <div>Loading task details...</div>;
   if (error) return <div>Error: {error.message}</div>;

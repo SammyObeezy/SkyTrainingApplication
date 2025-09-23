@@ -5,6 +5,7 @@ import { useMutateData } from '../../hooks/useMutateData';
 import { useActions } from '../../context/ActionsContext';
 import { useRefetch } from '../../hooks/useRefetch';
 import './SubjectForm.css';
+import { useIdEncoder } from '../../hooks/useIdEncoder';
 
 interface SubjectFormProps {
   subjectId?: string;
@@ -19,13 +20,16 @@ export const SubjectForm: React.FC<SubjectFormProps> = ({ subjectId }) => {
   const { closeModal } = useActions();
   const { refetch } = useRefetch();
   const navigate = useNavigate();
+  const { decode } = useIdEncoder();
   const isEditMode = !!subjectId;
+
+  const actualSubjectId = isEditMode ? decode(subjectId) : null;
 
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
 
   const { data: subjectData, isLoading: isLoadingSubject } = useFetchData<Subject>(
-    isEditMode ? `/admin/subjects/${subjectId}` : ''
+    isEditMode ? `/admin/subjects/${actualSubjectId}` : ''
   );
 
   const { mutate, isLoading: isMutating, error } = useMutateData();
@@ -43,7 +47,7 @@ export const SubjectForm: React.FC<SubjectFormProps> = ({ subjectId }) => {
         
     try {
       if (isEditMode) {
-        await mutate(`/admin/subjects/${subjectId}`, 'PUT', payload);
+        await mutate(`/admin/subjects/${actualSubjectId}`, 'PUT', payload);
         closeModal();
         
         // Use seamless refetch for edits

@@ -1,6 +1,7 @@
 import React from 'react';
 import { createFileRoute } from '@tanstack/react-router';
 import { useFetchData } from '../../../hooks/useFetchData';
+import { useIdEncoder } from '../../../hooks/useIdEncoder';
 
 // Defines the route for /subjects/:subjectId
 export const Route = createFileRoute('/_private/subjects/$subjectId')({
@@ -18,8 +19,11 @@ type Subject = {
 function SubjectDetailPage() {
   // Get the subjectId from the type-safe route parameters
   const { subjectId } = Route.useParams();
+  const { decode } = useIdEncoder();
+  
+  const actualSubjectId = decode(subjectId);
 
-  const { data: subject, isLoading, error } = useFetchData<Subject>(`/admin/subjects/${subjectId}`);
+  const { data: subject, isLoading, error } = useFetchData<Subject>(`/admin/subjects/${actualSubjectId}`);
 
   if (isLoading) {
     return <div>Loading subject details...</div>;

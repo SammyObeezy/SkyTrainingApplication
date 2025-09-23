@@ -1,6 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { useFetchData } from '../../../hooks/useFetchData';
 import './UserDetail.css';
+import { useIdEncoder } from '../../../hooks/useIdEncoder';
 
 export const Route = createFileRoute('/_private/users/$userId')({
   component: UserDetailPage,
@@ -18,7 +19,12 @@ type User = {
 
 function UserDetailPage() {
   const { userId } = Route.useParams();
-  const { data: user, isLoading, error } = useFetchData<User>(`/admin/users/${userId}`);
+  const { decode } = useIdEncoder();
+  
+  // Decode the URL parameter
+  const actualUserId = decode(userId);
+  
+  const { data: user, isLoading, error } = useFetchData<User>(`/admin/users/${actualUserId}`);
         
   if (isLoading) return (
     <div className="page-container">
