@@ -45,19 +45,19 @@ export const TableProvider: React.FC<TableProviderProps> = ({
   // Handle API response structure - extract records array for tasks
   const pageData = useMemo(() => {
     if (!apiResponse) return [];
-    
+
     // For tasks API, data comes in records array
     if (config.type === 'tasks' && apiResponse.records && Array.isArray(apiResponse.records)) {
       console.log('Raw API data for tasks:', apiResponse.records);
       return apiResponse.records;
     }
-    
+
     // For other APIs, data might be direct array
     if (Array.isArray(apiResponse)) {
       console.log('Raw API data (array):', apiResponse);
       return apiResponse;
     }
-    
+
     return [];
   }, [apiResponse, config.type]);
 
@@ -96,17 +96,17 @@ export const TableProvider: React.FC<TableProviderProps> = ({
     return processed;
   }, [pageData, state.filters, state.sorters]);
 
- const statusColors = {
-  active: { backgroundColor: '#d4edda', color: '#155724' },
-  approved: { backgroundColor: '#d4edda', color: '#155724' },
-  inactive: { backgroundColor: '#f8f9fa', color: '#6c757d' },
-  pending: { backgroundColor: '#fff3cd', color: '#856404' },
-  moderator: { backgroundColor: '#cce5ff', color: '#004085' },
-  admin: { backgroundColor: '#e2e3e5', color: '#383d41' },
-  user: { backgroundColor: '#f8f9fa', color: '#495057' },
-  trainee: { backgroundColor: '#f8f9fa', color: '#495057' },
-  rejected: { backgroundColor: '#f8d7da', color: '#721c24' }
-};
+  const statusColors = {
+    active: { backgroundColor: '#d4edda', color: '#155724' },
+    approved: { backgroundColor: '#d4edda', color: '#155724' },
+    inactive: { backgroundColor: '#f8f9fa', color: '#6c757d' },
+    pending: { backgroundColor: '#fff3cd', color: '#856404' },
+    moderator: { backgroundColor: '#cce5ff', color: '#004085' },
+    admin: { backgroundColor: '#e2e3e5', color: '#383d41' },
+    user: { backgroundColor: '#f8f9fa', color: '#495057' },
+    trainee: { backgroundColor: '#f8f9fa', color: '#495057' },
+    rejected: { backgroundColor: '#f8d7da', color: '#721c24' }
+  };
 
   const columns: TableColumn[] = useMemo(() => {
     switch (config.type) {
@@ -164,7 +164,8 @@ export const TableProvider: React.FC<TableProviderProps> = ({
           { id: 'title', caption: 'Title', filterable: true, sortable: true, size: 200 },
           { id: 'subject_name', caption: 'Subject', filterable: true, sortable: true, size: 150 },
           { id: 'description', caption: 'Description', filterable: true, size: 250 },
-          { id: 'due_date', caption: 'Due Date', sortable: true, type: 'date', size: 150,
+          {
+            id: 'due_date', caption: 'Due Date', sortable: true, type: 'date', size: 150,
             render: (row) => new Date(row.due_date).toLocaleDateString()
           },
           { id: 'max_score', caption: 'Score', sortable: true, type: 'number', align: 'center', size: 100 },
@@ -192,6 +193,7 @@ export const TableProvider: React.FC<TableProviderProps> = ({
   }, [config.type, statusColors]);
 
   const actions: TableAction[] = useMemo(() => {
+    const { encode } = useIdEncoder();
     const viewIcon = ReactDOMServer.renderToStaticMarkup(<ViewIcon />);
     const editIcon = ReactDOMServer.renderToStaticMarkup(<EditIcon />);
     const deleteIcon = ReactDOMServer.renderToStaticMarkup(<DeleteIcon />);
@@ -203,18 +205,20 @@ export const TableProvider: React.FC<TableProviderProps> = ({
       };
       const paramKey = paramMap[type];
       return [
-        { 
-  id: 'view', 
-  title: `View ${type}`, 
-  icon: viewIcon, 
-  type: 'link' as const, 
-  to: `/${type}/$${paramKey}`, 
-  getParams: (row: any) => {
-    const { encode } = useIdEncoder();
-    return { [paramKey]: encode(row.id) };
-  }
-},
-        { id: 'edit', title: `Edit ${type}`, icon: editIcon, handler: (rowId: any) => openModal('edit', type, rowId) },
+        {
+          id: 'view',
+          title: `View ${type}`,
+          icon: viewIcon,
+          type: 'link' as const,
+          to: `/${type}/$${paramKey}`,
+          getParams: (row: any) => ({ [paramKey]: encode(row.id) })
+        },
+        {
+          id: 'edit',
+          title: `Edit ${type}`,
+          icon: editIcon,
+          handler: (rowId: any) => openModal('edit', type, encode(rowId))
+        },
         { id: 'delete', title: `Delete ${type}`, icon: deleteIcon, handler: (rowId: any) => openModal('delete', type, rowId) },
       ];
     }
