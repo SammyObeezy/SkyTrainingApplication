@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useFetchData } from '../../hooks/useFetchData';
 import { useMutateData } from '../../hooks/useMutateData';
 import { useActions } from '../../context/ActionsContext';
+import { useRefetch } from '../../hooks/useRefetch';
 import './UserForm.css';
 
 interface UserFormProps {
@@ -20,6 +21,7 @@ type User = {
 
 export const UserForm: React.FC<UserFormProps> = ({ userId, mode = 'admin', onSuccess }) => {
   const { closeModal } = useActions();
+  const { refetch } = useRefetch();
      
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -72,6 +74,11 @@ export const UserForm: React.FC<UserFormProps> = ({ userId, mode = 'admin', onSu
       console.log('Role and status updated successfully');
       
       closeModal();
+      
+      // Use seamless refetch instead of onSuccess callback
+      refetch({ resetToFirstPage: false }); // Stay on current page for user edits
+      
+      // Still call onSuccess if provided for backward compatibility
       if (onSuccess) {
         onSuccess();
       }

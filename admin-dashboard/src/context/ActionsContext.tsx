@@ -19,6 +19,7 @@ interface ActionsContextState {
 interface ActionsContextValue extends ActionsContextState {
   openModal: (type: ModalType, entityType: EntityType, entityId: number | string) => void;
   closeModal: () => void;
+  refetchData?: () => void; // Add optional refetch function
 }
 
 // --- CONTEXT CREATION ---
@@ -26,7 +27,6 @@ interface ActionsContextValue extends ActionsContextState {
 const ActionsContext = createContext<ActionsContextValue | null>(null);
 
 // Custom hook for easy access to the context
-// This is the corrected line: used ':' instead of 'of'
 export const useActions = (): ActionsContextValue => {
   const context = useContext(ActionsContext);
   if (!context) {
@@ -37,7 +37,12 @@ export const useActions = (): ActionsContextValue => {
 
 // --- PROVIDER COMPONENT ---
 
-export const ActionsProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+interface ActionsProviderProps {
+  children: ReactNode;
+  refetchData?: () => void; // Accept refetch function as prop
+}
+
+export const ActionsProvider: React.FC<ActionsProviderProps> = ({ children, refetchData }) => {
   const [state, setState] = useState<ActionsContextState>({
     modalType: null,
     entityType: null,
@@ -56,6 +61,7 @@ export const ActionsProvider: React.FC<{ children: ReactNode }> = ({ children })
     ...state,
     openModal,
     closeModal,
+    refetchData, // Pass through the refetch function
   };
 
   return (

@@ -3,16 +3,21 @@ import { useNavigate } from '@tanstack/react-router';
 import { useFetchData } from '../../hooks/useFetchData';
 import { useMutateData } from '../../hooks/useMutateData';
 import { useActions } from '../../context/ActionsContext';
+import { useRefetch } from '../../hooks/useRefetch';
 import './SubjectForm.css';
 
 interface SubjectFormProps {
-  subjectId?: string; 
+  subjectId?: string;
 }
 
-type Subject = { name: string; description: string; }
+type Subject = {
+  name: string;
+  description: string;
+}
 
 export const SubjectForm: React.FC<SubjectFormProps> = ({ subjectId }) => {
   const { closeModal } = useActions();
+  const { refetch } = useRefetch();
   const navigate = useNavigate();
   const isEditMode = !!subjectId;
 
@@ -35,27 +40,34 @@ export const SubjectForm: React.FC<SubjectFormProps> = ({ subjectId }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const payload = { name, description };
-    
+        
     try {
       if (isEditMode) {
         await mutate(`/admin/subjects/${subjectId}`, 'PUT', payload);
         closeModal();
+        
+        // Use seamless refetch for edits
+        refetch({ resetToFirstPage: false });
       } else {
         await mutate('/admin/subjects', 'POST', payload);
-        // Add the empty search object here
+        
+        // For new subjects, navigate to subjects page and trigger refetch
         navigate({ to: '/subjects', search: { page: 1, filters: {}, sorters: {} } });
+        
+        // Small delay to ensure navigation completes before refetch
+        setTimeout(() => {
+          refetch({ resetToFirstPage: true });
+        }, 100);
       }
-      window.location.reload();
     } catch (err) {
       console.error("Failed to save subject:", err);
     }
   };
-  
+    
   const handleCancel = () => {
     if (isEditMode) {
       closeModal();
     } else {
-      // Add the empty search object here
       navigate({ to: '/subjects', search: { page: 1, filters: {}, sorters: {} } });
     }
   };
@@ -70,11 +82,25 @@ export const SubjectForm: React.FC<SubjectFormProps> = ({ subjectId }) => {
       <form onSubmit={handleSubmit} className="form-container">
         <div className="form-group">
           <label htmlFor="name" className="form-label">Subject Name</label>
-          <input id="name" type="text" value={name} onChange={(e) => setName(e.target.value)} className="form-input" required />
+          <input 
+            id="name" 
+            type="text" 
+            value={name} 
+            onChange={(e) => setName(e.target.value)} 
+            className="form-input" 
+            required 
+          />
         </div>
         <div className="form-group">
           <label htmlFor="description" className="form-label">Description</label>
-          <textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} className="form-textarea" rows={5} required />
+          <textarea 
+            id="description" 
+            value={description} 
+            onChange={(e) => setDescription(e.target.value)} 
+            className="form-textarea" 
+            rows={5} 
+            required 
+          />
         </div>
         {error && <div className="form-error">Error: {error.message}</div>}
         <div className="form-actions">

@@ -5,9 +5,11 @@ import {
   TableControlsWithContext,
   LoadingOverlay,
   ErrorMessage,
+  useTableContext,
 } from '../../../context/TableContext';
 import { PageHeader } from '../../../components/PageHeader/PageHeader';
 import { useUrlTableState } from '../../../hooks/useUrlTableState';
+import { useEffect } from 'react';
 
 // Define a schema to tell the route which search parameters are valid.
 const tableSearchSchema = {
@@ -25,26 +27,45 @@ export const Route = createFileRoute('/_private/users/')({
   component: UsersPage,
 });
 
+// Component that has access to TableContext
+const UsersPageContent = () => {
+  const { refetch } = useTableContext();
+  
+  // Update the root ActionsProvider with the refetch function
+  useEffect(() => {
+    // Set refetch on window for ActionsModal to access
+    (window as any).__tableRefetch = refetch;
+    
+    return () => {
+      delete (window as any).__tableRefetch;
+    };
+  }, [refetch]);
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-unit)' }}>
+      <PageHeader title="Manage Users">
+        <TableControlsWithContext />
+      </PageHeader>
+      
+      <ErrorMessage />
+      <LoadingOverlay />
+      <TableWithContext />
+    </div>
+  );
+};
+
 function UsersPage() {
   const [tableState, setTableState] = useUrlTableState(Route, [
     { column: 'id', order: 'asc' }
   ]);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-unit)' }}>
-      <TableProvider
-        config={{ type: 'users' }}
-        state={tableState}
-        onStateChange={(newState) => setTableState((prev) => ({ ...prev, ...newState }))}
-      >
-        <PageHeader title="Manage Users">
-          <TableControlsWithContext />
-        </PageHeader>
-        
-        <ErrorMessage />
-        <LoadingOverlay />
-        <TableWithContext />
-      </TableProvider>
-    </div>
+    <TableProvider
+      config={{ type: 'users' }}
+      state={tableState}
+      onStateChange={(newState) => setTableState((prev) => ({ ...prev, ...newState }))}
+    >
+      <UsersPageContent />
+    </TableProvider>
   );
 }

@@ -14,6 +14,8 @@ type TableProviderConfig = UserConfig | SubjectConfig | TaskConfig;
 interface TableProviderProps { children: ReactNode; config: TableProviderConfig; state: TableState; onStateChange: (newState: Partial<TableState>) => void; rowsPerPage?: number; }
 const TableContext = createContext<any>(null);
 
+export { TableContext }; // Export the context
+
 export const useTableContext = () => {
   const context = useContext(TableContext);
   if (!context) throw new Error('useTableContext must be used within a TableProvider');
@@ -33,13 +35,31 @@ export const TableProvider: React.FC<TableProviderProps> = ({
       default: throw new Error('Invalid table config type');
     }
   }, [config.type]);
-  
-  // Add refetch to the destructured values
-  const { data: pageData, pagination, isLoading, error, refetch } = useFetchData(endpoint, {
+
+  const { data: apiResponse, pagination, isLoading, error, refetch } = useFetchData<any>(endpoint, {
     tableState: state,
     pageSize: rowsPerPage,
   });
-  
+
+  // Handle API response structure - extract records array for tasks
+  const pageData = useMemo(() => {
+    if (!apiResponse) return [];
+    
+    // For tasks API, data comes in records array
+    if (config.type === 'tasks' && apiResponse.records && Array.isArray(apiResponse.records)) {
+      console.log('Raw API data for tasks:', apiResponse.records);
+      return apiResponse.records;
+    }
+    
+    // For other APIs, data might be direct array
+    if (Array.isArray(apiResponse)) {
+      console.log('Raw API data (array):', apiResponse);
+      return apiResponse;
+    }
+    
+    return [];
+  }, [apiResponse, config.type]);
+
   const processedData = useMemo(() => {
     if (!pageData || !Array.isArray(pageData)) return [];
     let processed = [...pageData];
@@ -74,75 +94,97 @@ export const TableProvider: React.FC<TableProviderProps> = ({
     }
     return processed;
   }, [pageData, state.filters, state.sorters]);
-  
-  const statusColors = {
-    active: { backgroundColor: '#e7f7ef', color: '#00c853' },
-    approved: { backgroundColor: '#e7f7ef', color: '#00c853' },
-    inactive: { backgroundColor: '#fff4e5', color: '#ff9800' },
-    pending: { backgroundColor: '#fff4e5', color: '#ff9800' },
-    moderator: { backgroundColor: '#e3f2fd', color: '#2196f3' },
-    admin: { backgroundColor: '#ede7f6', color: '#673ab7' },
-    user: { backgroundColor: '#f3e5f5', color: '#9c27b0' },
-    trainee: { backgroundColor: '#f3e5f5', color: '#9c27b0' },
-    rejected: { backgroundColor: '#fbeae9', color: '#dc3545' }
-  };
+
+ const statusColors = {
+  active: { backgroundColor: '#d4edda', color: '#155724' },
+  approved: { backgroundColor: '#d4edda', color: '#155724' },
+  inactive: { backgroundColor: '#f8f9fa', color: '#6c757d' },
+  pending: { backgroundColor: '#fff3cd', color: '#856404' },
+  moderator: { backgroundColor: '#cce5ff', color: '#004085' },
+  admin: { backgroundColor: '#e2e3e5', color: '#383d41' },
+  user: { backgroundColor: '#f8f9fa', color: '#495057' },
+  trainee: { backgroundColor: '#f8f9fa', color: '#495057' },
+  rejected: { backgroundColor: '#f8d7da', color: '#721c24' }
+};
 
   const columns: TableColumn[] = useMemo(() => {
     switch (config.type) {
       case 'users':
         return [
           { id: 'id', caption: 'ID', sortable: true, size: 80 },
-          { 
-            id: 'avatar_url', 
-            caption: 'Avatar', 
-            size: 60, 
+          {
+            id: 'avatar_url',
+            caption: 'Avatar',
+            size: 60,
             align: 'center',
-            render: (row) => row.avatar_url ? 
-              <img src={row.avatar_url} alt={row.name} style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover' }} /> : 
+            render: (row) => row.avatar_url ?
+              <img src={row.avatar_url} alt={row.name} style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover' }} /> :
               <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: '#e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', color: '#718096' }}>
                 {row.name?.charAt(0)?.toUpperCase() || '?'}
               </div>
           },
           { id: 'name', caption: 'Name', filterable: true, sortable: true, size: 200 },
           { id: 'email', caption: 'Email', filterable: true, sortable: true },
-          { 
-            id: 'role', 
-            caption: 'Role', 
-            filterable: true, 
-            sortable: true, 
+          {
+            id: 'role',
+            caption: 'Role',
+            filterable: true,
+            sortable: true,
             type: 'status',
             statusColors,
-            size: 150 
+            size: 150
           },
-          { 
-            id: 'status', 
-            caption: 'Status', 
-            filterable: true, 
-            sortable: true, 
+          {
+            id: 'status',
+            caption: 'Status',
+            filterable: true,
+            sortable: true,
             type: 'status',
             statusColors,
-            size: 150 
+            size: 150
           },
-          { 
-            id: 'created_at', 
-            caption: 'Created', 
-            sortable: true, 
-            render: (row) => new Date(row.created_at).toLocaleDateString(), 
-            size: 150 
+          {
+            id: 'created_at',
+            caption: 'Created',
+            sortable: true,
+            render: (row) => new Date(row.created_at).toLocaleDateString(),
+            size: 150
           },
         ];
       case 'subjects':
         return [
-          { id: 'name', caption: 'Name', filterable: true, sortable: true, size: 300}, 
-          { id: 'description', caption: 'Description', filterable: true }, 
+          { id: 'name', caption: 'Name', filterable: true, sortable: true, size: 300 },
+          { id: 'description', caption: 'Description', filterable: true },
           { id: 'created_by_name', caption: 'Created By', filterable: true, sortable: true }
         ];
       case 'tasks':
         return [
-          { id: 'title', caption: 'Title', filterable: true, sortable: true }, 
-          { id: 'subject_name', caption: 'Subject', filterable: true, sortable: true }, 
-          { id: 'due_date', caption: 'Due Date', sortable: true, type: 'date' }, 
-          { id: 'max_score', caption: 'Score', sortable: true, type: 'number', align: 'center' }
+          { id: 'id', caption: 'ID', sortable: true, size: 80 },
+          { id: 'title', caption: 'Title', filterable: true, sortable: true, size: 200 },
+          { id: 'subject_name', caption: 'Subject', filterable: true, sortable: true, size: 150 },
+          { id: 'description', caption: 'Description', filterable: true, size: 250 },
+          { id: 'due_date', caption: 'Due Date', sortable: true, type: 'date', size: 150,
+            render: (row) => new Date(row.due_date).toLocaleDateString()
+          },
+          { id: 'max_score', caption: 'Score', sortable: true, type: 'number', align: 'center', size: 100 },
+          {
+            id: 'is_active',
+            caption: 'Status',
+            filterable: true,
+            sortable: true,
+            type: 'status',
+            statusColors,
+            size: 100,
+            render: (row) => row.is_active ? 'Active' : 'Inactive'
+          },
+          { id: 'created_by_name', caption: 'Created By', filterable: true, sortable: true, size: 150 },
+          {
+            id: 'created_at',
+            caption: 'Created',
+            sortable: true,
+            render: (row) => new Date(row.created_at).toLocaleDateString(),
+            size: 150
+          }
         ];
       default: return [];
     }
@@ -153,39 +195,50 @@ export const TableProvider: React.FC<TableProviderProps> = ({
     const editIcon = ReactDOMServer.renderToStaticMarkup(<EditIcon />);
     const deleteIcon = ReactDOMServer.renderToStaticMarkup(<DeleteIcon />);
     const createActions = (type: 'users' | 'subjects' | 'tasks') => {
-        const paramMap = {
-            users: 'userId',
-            subjects: 'subjectId',
-            tasks: 'taskId',
-        };
-        const paramKey = paramMap[type];
-        return [
-            { id: 'view', title: `View ${type}`, icon: viewIcon, type: 'link' as const, to: `/${type}/$${paramKey}`, getParams: (row: any) => ({ [paramKey]: row.id.toString() }) },
-            { id: 'edit', title: `Edit ${type}`, icon: editIcon, handler: (rowId: any) => openModal('edit', type, rowId) },
-            { id: 'delete', title: `Delete ${type}`, icon: deleteIcon, handler: (rowId: any) => openModal('delete', type, rowId) },
-        ];
+      const paramMap = {
+        users: 'userId',
+        subjects: 'subjectId',
+        tasks: 'taskId',
+      };
+      const paramKey = paramMap[type];
+      return [
+        { id: 'view', title: `View ${type}`, icon: viewIcon, type: 'link' as const, to: `/${type}/$${paramKey}`, getParams: (row: any) => ({ [paramKey]: row.id.toString() }) },
+        { id: 'edit', title: `Edit ${type}`, icon: editIcon, handler: (rowId: any) => openModal('edit', type, rowId) },
+        { id: 'delete', title: `Delete ${type}`, icon: deleteIcon, handler: (rowId: any) => openModal('delete', type, rowId) },
+      ];
     }
     return createActions(config.type);
   }, [config.type, openModal]);
 
-  // Add refetch to the context value
-  const contextValue = { 
-    state, 
-    data: processedData, 
-    totalRecords: pagination?.total_count || 0, 
-    isLoading, 
-    error: error?.message || null, 
-    updateState: onStateChange, 
-    columns, 
-    actions, 
-    rowsPerPage, 
-    emptyMessage: `No ${config.type} found.`, 
-    tableManagerRef, 
+  // Update pagination to handle both API response structures
+  const totalRecords = useMemo(() => {
+    if (config.type === 'tasks' && apiResponse?.total_count) {
+      return apiResponse.total_count;
+    }
+    return pagination?.total_count || 0;
+  }, [apiResponse, pagination, config.type]);
+
+  const contextValue = {
+    state,
+    data: processedData,
+    totalRecords,
+    isLoading,
+    error: error?.message || null,
+    updateState: onStateChange,
+    columns,
+    actions,
+    rowsPerPage,
+    emptyMessage: `No ${config.type} found.`,
+    tableManagerRef,
     getControlStatus: () => ({ filterCount: state.filters.length, sorterCount: state.sorters.length }),
-    refetch // Add this line
+    refetch
   };
 
-  return (<TableContext.Provider value={contextValue}>{children}</TableContext.Provider>);
+  return (
+    <TableContext.Provider value={contextValue}>
+      {children}
+    </TableContext.Provider>
+  );
 };
 
 export const TableWithContext: React.FC = () => {
