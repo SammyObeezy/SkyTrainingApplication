@@ -1,60 +1,48 @@
-import { useState } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../context/ApiProvider';
+import { API_BASE_URL, createHeaders } from '../components/config/api';
 
 type HttpMethod = 'POST' | 'PUT' | 'DELETE';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-
-export const useMutateData = <T,>() => {
+export const useMutateData = () => {
   const { token } = useAuth();
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
-  const [data, setData] = useState<T | null>(null);
+  const queryClient = useQueryClient();
 
-  const mutate = async (endpoint: string, method: HttpMethod, body?: any) => {
-    if (!token) {
-        setError(new Error("No authentication token found."));
-        return;
-    }
-         
-    setIsLoading(true);
-    setError(null);
-    setData(null);
-
-    try {
-      // Check if body is FormData
-      const isFormData = body instanceof FormData;
-      
-      const headers: Record<string, string> = {
-        'Authorization': `Bearer ${token}`,
-      };
-      
-      // Only add Content-Type for JSON data
-      if (!isFormData) {
-        headers['Content-Type'] = 'application/json';
+  return useMutation({
+    mutationFn: async ({ endpoint, method, body }: {
+      endpoint: string;
+      method: HttpMethod;
+      body?: any;
+    }) => {
+      if (!token) {
+        throw new Error("No authentication token found.");
       }
 
+      const isFormData = body instanceof FormData;
+      
       const response = await fetch(`${API_BASE_URL}${endpoint}`, {
         method,
-        headers,
+        headers: createHeaders(token, isFormData),
         body: body ? (isFormData ? body : JSON.stringify(body)) : null,
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ message: 'Request failed with status ' + response.status }));
+        const errorData = await response.json().catch(() => ({ 
+          message: 'Request failed with status ' + response.status 
+        }));
         throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
       }
 
-      const result = await response.json();
-      setData(result);
-      return result;
-    } catch (e) {
-      setError(e as Error);
-      throw e;
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  return { mutate, data, isLoading, error };
+      return response.json();
+    },
+    onSuccess: (_, variables) => {
+      // Invalidate related queries based on endpoint
+      const endpointParts = variables.endpoint.split('/');
+      const resourceType = endpointParts[2]; // e.g., 'users', 'subjects', 'tasks'
+      
+      if (resourceType) {
+        queryClient.invalidateQueries({ queryKey: ['data', `/admin/${resourceType}`] });
+      }
+    },
+  });
 };

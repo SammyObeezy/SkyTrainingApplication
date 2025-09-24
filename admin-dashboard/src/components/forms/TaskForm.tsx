@@ -2,7 +2,6 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useFetchData } from '../../hooks/useFetchData';
 import { useMutateData } from '../../hooks/useMutateData';
 import { useActions } from '../../context/ActionsContext';
-import { useRefetch } from '../../hooks/useRefetch';
 import './TaskForm.css';
 import { useIdEncoder } from '../../hooks/useIdEncoder';
 
@@ -26,7 +25,6 @@ type Subject = {
 
 export const TaskForm: React.FC<TaskFormProps> = ({ taskId }) => {
   const { closeModal } = useActions();
-  const { refetch } = useRefetch();
   const { decode } = useIdEncoder();
   const isEditMode = taskId !== 'new';
 
@@ -34,35 +32,30 @@ export const TaskForm: React.FC<TaskFormProps> = ({ taskId }) => {
 
   const [formState, setFormState] = useState<Partial<Task>>({});
 
-  const { data: taskResponse, isLoading: isLoadingTask } = useFetchData<any>(
-    `/admin/tasks/${actualTaskId}`
+  const { data: taskResponse, isLoading: isLoadingTask } = useFetchData(
+    isEditMode ? `/admin/tasks/${actualTaskId}` : ''
   );
   
-  const { data: subjectsResponse, isLoading: isLoadingSubjects } = useFetchData<any>('/admin/subjects');
+  const { data: subjectsResponse, isLoading: isLoadingSubjects } = useFetchData('/admin/subjects');
 
-  const { mutate, isLoading: isMutating, error } = useMutateData();
+  const { mutate, isPending: isMutating, error } = useMutateData();
 
   // Handle subjects response - move this BEFORE the loading check
   const subjectList: Subject[] = useMemo(() => {
-    if (!subjectsResponse) return [];
+    if (!subjectsResponse?.data) return [];
     
-    if (Array.isArray(subjectsResponse)) {
-      return subjectsResponse.flat();
-    }
-    
-    if (subjectsResponse.records && Array.isArray(subjectsResponse.records)) {
-      return subjectsResponse.records.flat();
+    if (Array.isArray(subjectsResponse.data)) {
+      return subjectsResponse.data.flat();
     }
     
     return [];
   }, [subjectsResponse]);
 
   useEffect(() => {
-    if (isEditMode && taskResponse && !Array.isArray(taskResponse)) {
-      // Handle both direct task object and API response with records
-      const taskData = taskResponse.records ? taskResponse.records[0] : taskResponse;
+    if (isEditMode && taskResponse?.data && !Array.isArray(taskResponse.data)) {
+      const taskData = taskResponse.data;
       
-      if (taskData && taskData.id == taskId) { // Only use data if it matches the requested task
+      if (taskData && taskData.id == actualTaskId) {
         const formattedDate = new Date(taskData.due_date).toISOString().slice(0, 16);
         setFormState({
           ...taskData,
@@ -70,7 +63,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({ taskId }) => {
         });
       }
     }
-  }, [taskResponse, isEditMode, taskId]);
+  }, [taskResponse, isEditMode, actualTaskId]);
   
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
@@ -111,15 +104,20 @@ export const TaskForm: React.FC<TaskFormProps> = ({ taskId }) => {
     
     try {
       if (isEditMode) {
-        await mutate(`/admin/tasks/${actualTaskId}`, 'PUT', submitData);
+        await mutate({ 
+          endpoint: `/admin/tasks/${actualTaskId}`, 
+          method: 'PUT', 
+          body: submitData 
+        });
       } else {
-        await mutate('/admin/tasks', 'POST', submitData);
+        await mutate({ 
+          endpoint: '/admin/tasks', 
+          method: 'POST', 
+          body: submitData 
+        });
       }
       
       closeModal();
-      
-      // Use seamless refetch instead of page reload
-      refetch({ resetToFirstPage: !isEditMode });
     } catch (err) {
       console.error("Failed to save task:", err);
       console.error("Form data that failed:", submitData);

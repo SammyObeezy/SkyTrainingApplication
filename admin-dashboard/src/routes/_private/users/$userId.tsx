@@ -7,16 +7,6 @@ export const Route = createFileRoute('/_private/users/$userId')({
   component: UserDetailPage,
 });
 
-type User = {
-  id: number;
-  name: string;
-  email: string;
-  role: string;
-  status: string;
-  created_at: string;
-  avatar_url: string | null;
-}
-
 function UserDetailPage() {
   const { userId } = Route.useParams();
   const { decode } = useIdEncoder();
@@ -24,7 +14,7 @@ function UserDetailPage() {
   // Decode the URL parameter
   const actualUserId = decode(userId);
   
-  const { data: user, isLoading, error } = useFetchData<User>(`/admin/users/${actualUserId}`);
+  const { data: userResponse, isLoading, error } = useFetchData(`/admin/users/${actualUserId}`);
         
   if (isLoading) return (
     <div className="page-container">
@@ -41,6 +31,9 @@ function UserDetailPage() {
       </div>
     </div>
   );
+  
+  // Extract user from React Query response structure
+  const user = userResponse?.data;
   
   if (!user || Array.isArray(user)) return (
     <div className="page-container">

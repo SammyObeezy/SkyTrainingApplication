@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import { useContext } from 'react';
 import { useActions } from '../../context/ActionsContext';
 import { useMutateData } from '../../hooks/useMutateData';
 import { UserForm } from '../forms/UserForm';
@@ -8,9 +8,6 @@ import './ActionsModal.css';
 
 // Import TableContext directly but use it safely
 import { TableContext } from '../../context/TableContext';
-
-// Create a RefetchProvider for the modal forms
-const RefetchContext = React.createContext<(() => void) | null>(null);
 
 // Safe hook that doesn't throw if not in TableProvider
 const useSafeTableContext = () => {
@@ -24,14 +21,18 @@ export const ActionsModal = () => {
   
   // Get refetch function from table context
   const refetch = tableContext?.refetch;
-  const { mutate, isLoading } = useMutateData();
+  const { mutate, isPending } = useMutateData();
 
   const handleDelete = async () => {
     if (!entityType || !entityId) return;
 
     const endpoint = `/admin/${entityType}/${entityId}`;
     try {
-      await mutate(endpoint, 'DELETE');
+      await mutate({ 
+        endpoint, 
+        method: 'DELETE',
+        body: undefined 
+      });
       closeModal();
       if (refetch) {
         refetch();
@@ -61,8 +62,8 @@ export const ActionsModal = () => {
           </p>
           <div className="modal-footer">
             <button onClick={closeModal} className="button-secondary">Cancel</button>
-            <button onClick={handleDelete} className="button-danger" disabled={isLoading}>
-              {isLoading ? 'Deleting...' : 'Delete'}
+            <button onClick={handleDelete} className="button-danger" disabled={isPending}>
+              {isPending ? 'Deleting...' : 'Delete'}
             </button>
           </div>
         </div>
@@ -73,23 +74,17 @@ export const ActionsModal = () => {
   const renderEditForm = () => {
     if (!entityId) return null;
     
-    // Provide refetch context to forms
-    return (
-      <RefetchContext.Provider value={refetch}>
-        {(() => {
-          switch (entityType) {
-            case 'users':
-              return <UserForm userId={entityId.toString()} />;
-            case 'subjects':
-              return <SubjectForm subjectId={entityId.toString()} />;
-            case 'tasks':
-              return <TaskForm taskId={entityId.toString()} />;
-            default:
-              return null;
-          }
-        })()}
-      </RefetchContext.Provider>
-    );
+    // Forms now handle their own refetch via React Query
+    switch (entityType) {
+      case 'users':
+        return <UserForm userId={entityId.toString()} />;
+      case 'subjects':
+        return <SubjectForm subjectId={entityId.toString()} />;
+      case 'tasks':
+        return <TaskForm taskId={entityId.toString()} />;
+      default:
+        return null;
+    }
   };
 
   if (modalType === 'edit') {

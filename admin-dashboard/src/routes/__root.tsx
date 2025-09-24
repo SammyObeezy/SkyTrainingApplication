@@ -1,20 +1,35 @@
 import { createRootRoute, Outlet, Link } from '@tanstack/react-router';
 // Corrected import path for the devtools
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { ApiProvider } from '../context/ApiProvider';
 import { ActionsProvider } from '../context/ActionsContext';
 import { ActionsModal } from '../components/modals/ActionsModal';
 
+// Create a client
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      gcTime: 1000 * 60 * 10, // 10 minutes (formerly cacheTime)
+    },
+  },
+});
+
 function RootComponent() {
   return (
-    <ApiProvider>
-      <ActionsProvider>
-        <Outlet />
-        <ActionsModal />
-      </ActionsProvider>
-      {/* This will now work correctly */}
-      <TanStackRouterDevtools />
-    </ApiProvider>
+    <QueryClientProvider client={queryClient}>
+      <ApiProvider>
+        <ActionsProvider>
+          <Outlet />
+          <ActionsModal />
+        </ActionsProvider>
+        {/* This will now work correctly */}
+        <TanStackRouterDevtools />
+        <ReactQueryDevtools initialIsOpen={false} />
+      </ApiProvider>
+    </QueryClientProvider>
   );
 }
 

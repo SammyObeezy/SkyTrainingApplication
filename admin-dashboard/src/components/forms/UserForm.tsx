@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useFetchData } from '../../hooks/useFetchData';
 import { useMutateData } from '../../hooks/useMutateData';
 import { useActions } from '../../context/ActionsContext';
-import { useRefetch } from '../../hooks/useRefetch';
 import './UserForm.css';
 import { useIdEncoder } from '../../hooks/useIdEncoder';
 
@@ -22,8 +21,6 @@ type User = {
 
 export const UserForm: React.FC<UserFormProps> = ({ userId, mode = 'admin', onSuccess }) => {
   const { closeModal } = useActions();
-  const { refetch } = useRefetch();
-
   const { decode } = useIdEncoder();
 
   const actualUserId = decode(userId);
@@ -35,21 +32,22 @@ export const UserForm: React.FC<UserFormProps> = ({ userId, mode = 'admin', onSu
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
 
-  const { data: userData, isLoading: isLoadingUser } = useFetchData<User>(
+  const { data: userResponse, isLoading: isLoadingUser } = useFetchData(
     `/admin/users/${actualUserId}`,
     { tableState: { page: 1, filters: [], sorters: [] } }
   );
 
-  const { mutate: updateUser, isLoading: isMutating, error } = useMutateData();
+  const { mutate: updateUser, isPending: isMutating, error } = useMutateData();
 
   useEffect(() => {
-    if (userData && !Array.isArray(userData)) {
+    if (userResponse?.data && !Array.isArray(userResponse.data)) {
+      const userData = userResponse.data;
       setName(userData.name);
       setEmail(userData.email);
       setRole(userData.role);
       setStatus(userData.status);
     }
-  }, [userData]);
+  }, [userResponse]);
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -69,8 +67,17 @@ export const UserForm: React.FC<UserFormProps> = ({ userId, mode = 'admin', onSu
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await updateUser(`/admin/users/${actualUserId}/role`, 'PUT', { role });
-      await updateUser(`/admin/users/${actualUserId}/status`, 'PUT', { status });
+      await updateUser({ 
+        endpoint: `/admin/users/${actualUserId}/role`, 
+        method: 'PUT', 
+        body: { role } 
+      });
+      
+      await updateUser({ 
+        endpoint: `/admin/users/${actualUserId}/status`, 
+        method: 'PUT', 
+        body: { status } 
+      });
 
       if (avatarFile) {
         console.log('Avatar file selected but not uploaded yet - API endpoint needed:', avatarFile.name);
@@ -79,9 +86,6 @@ export const UserForm: React.FC<UserFormProps> = ({ userId, mode = 'admin', onSu
       console.log('Role and status updated successfully');
 
       closeModal();
-
-      // Use seamless refetch instead of onSuccess callback
-      refetch({ resetToFirstPage: false }); // Stay on current page for user edits
 
       // Still call onSuccess if provided for backward compatibility
       if (onSuccess) {
@@ -96,7 +100,7 @@ export const UserForm: React.FC<UserFormProps> = ({ userId, mode = 'admin', onSu
     return <div className="form-card">Loading user details...</div>;
   }
 
-  const user = userData as User;
+  const user = userResponse?.data as User;
 
   return (
     <div className="form-card">

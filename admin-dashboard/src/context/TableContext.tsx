@@ -28,34 +28,40 @@ export const TableProvider: React.FC<TableProviderProps> = ({
 }) => {
   const tableManagerRef = useRef<any>(null);
   const { openModal } = useActions();
+  
   const endpoint = useMemo(() => {
-    switch (config.type) {
-      case 'users': return '/admin/users';
-      case 'subjects': return '/admin/subjects';
-      case 'tasks': return '/admin/tasks';
-      default: throw new Error('Invalid table config type');
-    }
+    const endpoints = {
+      users: '/admin/users',
+      subjects: '/admin/subjects',
+      tasks: '/admin/tasks'
+    };
+    return endpoints[config.type];
   }, [config.type]);
 
-  const { data: apiResponse, pagination, isLoading, error, refetch } = useFetchData<any>(endpoint, {
+  const { data: apiResponse, isLoading, error, refetch } = useFetchData(endpoint, {
     tableState: state,
     pageSize: rowsPerPage,
   });
 
   // Handle API response structure - extract records array for tasks
   const pageData = useMemo(() => {
-    if (!apiResponse) return [];
+    if (!apiResponse?.data) return [];
 
     // For tasks API, data comes in records array
-    if (config.type === 'tasks' && apiResponse.records && Array.isArray(apiResponse.records)) {
-      console.log('Raw API data for tasks:', apiResponse.records);
-      return apiResponse.records;
+    if (config.type === 'tasks' && Array.isArray(apiResponse.data)) {
+      console.log('Raw API data for tasks:', apiResponse.data);
+      return apiResponse.data;
     }
 
     // For other APIs, data might be direct array
-    if (Array.isArray(apiResponse)) {
-      console.log('Raw API data (array):', apiResponse);
-      return apiResponse;
+    if (Array.isArray(apiResponse.data)) {
+      console.log('Raw API data (array):', apiResponse.data);
+      return apiResponse.data;
+    }
+
+    // Handle single item responses
+    if (apiResponse.data && typeof apiResponse.data === 'object') {
+      return [apiResponse.data];
     }
 
     return [];
@@ -225,13 +231,20 @@ export const TableProvider: React.FC<TableProviderProps> = ({
     return createActions(config.type);
   }, [config.type, openModal]);
 
-  // Update pagination to handle both API response structures
+  // Update pagination to handle React Query response structure
   const totalRecords = useMemo(() => {
-    if (config.type === 'tasks' && apiResponse?.total_count) {
-      return apiResponse.total_count;
+    // First check if we have pagination data from our React Query response
+    if (apiResponse?.pagination?.total_count) {
+      return apiResponse.pagination.total_count;
     }
-    return pagination?.total_count || 0;
-  }, [apiResponse, pagination, config.type]);
+    
+    // Fallback for responses without pagination
+    if (Array.isArray(apiResponse?.data)) {
+      return apiResponse.data.length;
+    }
+    
+    return 0;
+  }, [apiResponse]);
 
   const contextValue = {
     state,

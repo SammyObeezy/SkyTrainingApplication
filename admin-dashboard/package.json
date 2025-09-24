@@ -10,6 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.90.2",
+    "@tanstack/react-query-devtools": "^5.90.2",
     "@tanstack/react-router": "^1.131.44",
     "@tanstack/router": "0.0.1-beta.53",
     "react": "^19.1.1",

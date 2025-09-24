@@ -8,14 +8,6 @@ export const Route = createFileRoute('/_private/subjects/$subjectId')({
   component: SubjectDetailPage,
 });
 
-// Define the expected shape of a single subject
-type Subject = {
-    id: number;
-    name: string;
-    description: string;
-    created_by_name: string;
-}
-
 function SubjectDetailPage() {
   // Get the subjectId from the type-safe route parameters
   const { subjectId } = Route.useParams();
@@ -23,7 +15,7 @@ function SubjectDetailPage() {
   
   const actualSubjectId = decode(subjectId);
 
-  const { data: subject, isLoading, error } = useFetchData<Subject>(`/admin/subjects/${actualSubjectId}`);
+  const { data: subjectResponse, isLoading, error } = useFetchData(`/admin/subjects/${actualSubjectId}`);
 
   if (isLoading) {
     return <div>Loading subject details...</div>;
@@ -32,6 +24,9 @@ function SubjectDetailPage() {
   if (error) {
     return <div>Error: {error.message}</div>;
   }
+
+  // Extract subject from React Query response structure
+  const subject = subjectResponse?.data;
 
   // We add this check because `subject` could be null initially
   if (!subject || Array.isArray(subject)) {

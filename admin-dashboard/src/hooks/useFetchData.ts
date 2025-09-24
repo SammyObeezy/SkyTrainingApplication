@@ -1,5 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '../context/ApiProvider';
+import { API_BASE_URL, createHeaders } from '../components/config/api';
 import type { FilterRule, SortRule } from '../components/TableManager/TableManager';
 
 interface TableState {
@@ -13,66 +14,48 @@ interface FetchOptions {
   pageSize?: number;
 }
 
-interface PaginationInfo {
-  current_page: number;
-  last_page: number;
-  page_size: number;
-  total_count: number;
-}
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-
-export const useFetchData = <T,>(endpoint: string, options: FetchOptions = {}) => {
+export const useFetchData = (endpoint: string, options: FetchOptions = {}) => {
   const { tableState, pageSize = 10 } = options;
   const { token } = useAuth();
-  const [data, setData] = useState<T | T[] | null>(null);
-  const [pagination, setPagination] = useState<PaginationInfo | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
 
-  const fetchData = useCallback(async () => {
-    if (!endpoint || !token) {
-      setIsLoading(false);
-      return;
-    }
-    setIsLoading(true);
-    setError(null);
-    try {
+  return useQuery({
+    queryKey: ['data', endpoint, tableState?.page, pageSize],
+    queryFn: async () => {
+      if (!token) {
+        throw new Error("No authentication token found.");
+      }
+
       const params = new URLSearchParams();
       if (tableState) {
         params.append('page', tableState.page.toString());
         params.append('pageSize', pageSize.toString());
       }
       
-      const url = `${API_BASE_URL}${endpoint}?${params.toString()}`;
-      const response = await fetch(url, {
-        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+      const response = await fetch(`${API_BASE_URL}${endpoint}?${params}`, {
+        headers: createHeaders(token),
       });
 
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const result = await response.json();
       
+      // Handle different API response structures
       if (result.records) {
-        setData(result.records || []);
-        setPagination({
-          current_page: result.current_page,
-          last_page: result.last_page,
-          page_size: result.page_size,
-          total_count: result.total_count,
-        });
+        return {
+          data: result.records || [],
+          pagination: {
+            current_page: result.current_page,
+            last_page: result.last_page,
+            page_size: result.page_size,
+            total_count: result.total_count,
+          }
+        };
       } else {
-        setData(result.user || result.subject || result.task || result);
-        setPagination(null);
+        return {
+          data: result.user || result.subject || result.task || result,
+          pagination: null
+        };
       }
-    } catch (e) {
-      setError(e as Error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [endpoint, token, tableState?.page, pageSize]);
-
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
-
-  return { data, pagination, isLoading, error, refetch: fetchData };
+    },
+    enabled: !!endpoint && !!token,
+  });
 };

@@ -7,16 +7,6 @@ export const Route = createFileRoute('/_private/tasks/$taskId')({
   component: TaskDetailPage,
 });
 
-type Task = {
-  id: number;
-  title: string;
-  description: string;
-  requirements: string;
-  subject_name: string;
-  due_date: string;
-  max_score: number;
-}
-
 function TaskDetailPage() {
   const { taskId } = Route.useParams();
 
@@ -24,10 +14,14 @@ function TaskDetailPage() {
   
   const actualTaskId = decode(taskId);
 
-  const { data: task, isLoading, error } = useFetchData<Task>(`/admin/tasks/${actualTaskId}`);
+  const { data: taskResponse, isLoading, error } = useFetchData(`/admin/tasks/${actualTaskId}`);
 
   if (isLoading) return <div>Loading task details...</div>;
   if (error) return <div>Error: {error.message}</div>;
+  
+  // Extract task from React Query response structure
+  const task = taskResponse?.data;
+  
   if (!task || Array.isArray(task)) return <div>Task not found.</div>;
   
   return (
