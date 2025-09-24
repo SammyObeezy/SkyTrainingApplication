@@ -3,6 +3,10 @@
     {
       "source": "/api/(.*)",
       "destination": "https://the-dojo.pagoda.africa/api/$1"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ]
 }
